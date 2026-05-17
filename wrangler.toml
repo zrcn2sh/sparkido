@@ -1,0 +1,19 @@
+name = "ido"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages + D1 (배포 시 database_id 설정)
+[[d1_databases]]
+binding = "DB"
+database_name = "sparkido"
+database_id = "be8a5d95-3f30-4016-bd26-50ac440580e5"
+migrations_dir = "migrations"
+
+# R2 (선택)
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "ido-assets"
+
+[vars]
+NEXT_PUBLIC_WWW_URL = "https://www.idosquare.co.kr"
+NEXT_PUBLIC_SPARK_URL = "https://spark.idosquare.co.kr"
