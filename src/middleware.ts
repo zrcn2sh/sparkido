@@ -7,9 +7,12 @@ function rewritePath(prefix: 'www' | 'spark', pathname: string) {
 }
 
 const isAuthPage = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
-const isSparkWritePage = createRouteMatcher(['/new'])
 
-export default clerkMiddleware(async (auth, req) => {
+function isPathSparkRoute(pathname: string) {
+  return pathname === '/spark' || pathname.startsWith('/spark/')
+}
+
+export default clerkMiddleware(async (_auth, req) => {
   const host = req.headers.get('host') || ''
   const pathname = req.nextUrl.pathname
 
@@ -21,13 +24,14 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
-  if (host.startsWith('spark.') && isSparkWritePage(req)) {
-    await auth.protect()
-  }
+  const onSparkSubdomain = host.startsWith('spark.')
+  const onSparkPath = isPathSparkRoute(pathname)
 
   const url = req.nextUrl.clone()
-  if (host.startsWith('spark.')) {
+  if (onSparkSubdomain) {
     url.pathname = rewritePath('spark', pathname)
+  } else if (onSparkPath) {
+    url.pathname = pathname
   } else {
     url.pathname = rewritePath('www', pathname)
   }

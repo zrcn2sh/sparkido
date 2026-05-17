@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +25,7 @@ const STAGES: { value: SparkStage; label: string }[] = [
 
 export function SparkForm() {
   const router = useRouter()
+  const pathname = usePathname()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [stage, setStage] = useState<SparkStage>('idea')
@@ -64,7 +65,10 @@ export function SparkForm() {
         setError(data.error ?? '등록에 실패했습니다.')
         return
       }
-      router.push(`/${data.spark!.id}`)
+      const detailPath = pathname.startsWith('/spark')
+        ? `/spark/${data.spark!.id}`
+        : `/${data.spark!.id}`
+      router.push(detailPath)
       router.refresh()
     } catch {
       setError('네트워크 오류가 발생했습니다.')

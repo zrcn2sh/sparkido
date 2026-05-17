@@ -40,7 +40,8 @@ export function LabForm({ sparkId }: LabFormProps) {
     setError(null)
     setPending(true)
 
-    const form = new FormData(e.currentTarget)
+    const formEl = e.currentTarget
+    const form = new FormData(formEl)
 
     try {
       const res = await fetch(`/api/sparks/${sparkId}/labs`, {
@@ -53,16 +54,27 @@ export function LabForm({ sparkId }: LabFormProps) {
         }),
       })
 
-      const data = (await res.json()) as { error?: string }
+      let data: { error?: string } = {}
+      const text = await res.text()
+      if (text) {
+        try {
+          data = JSON.parse(text) as { error?: string }
+        } catch {
+          setError('서버 응답을 처리하지 못했습니다.')
+          return
+        }
+      }
+
       if (!res.ok) {
         setError(data.error ?? '등록에 실패했습니다.')
         return
       }
 
-      e.currentTarget.reset()
+      formEl.reset()
       setType('개발')
       router.refresh()
-    } catch {
+    } catch (err) {
+      console.error('[LabForm]', err)
       setError('네트워크 오류가 발생했습니다.')
     } finally {
       setPending(false)

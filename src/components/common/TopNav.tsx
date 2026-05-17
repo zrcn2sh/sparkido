@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { TopNavAuth } from '@/components/common/TopNavAuth'
 import { Separator } from '@/components/ui/separator'
-import { getAppUrl } from '@/lib/utils'
+import { getAppUrl, resolveSparkPath } from '@/lib/routes'
+import { cn } from '@/lib/utils'
+import { headers } from 'next/headers'
 
 type TopNavProps = {
   variant: 'www' | 'spark'
@@ -12,12 +14,18 @@ const linkClass =
 const activeClass = 'text-sm font-medium text-foreground'
 
 export function TopNav({ variant }: TopNavProps) {
-  const wwwUrl = getAppUrl('www')
-  const sparkUrl = getAppUrl('spark')
+  const host = headers().get('host') ?? ''
+  const wwwUrl = getAppUrl('www', host)
+  const sparkUrl = getAppUrl('spark', host)
 
   return (
     <header className="sticky top-0 z-50 border-hairline border-b border-border bg-background/80 backdrop-blur-md">
-      <nav className="mx-auto flex h-12 max-w-5xl items-center justify-between px-6">
+      <nav
+        className={cn(
+          'mx-auto flex h-12 items-center justify-between px-4 sm:px-6',
+          variant === 'spark' ? 'max-w-7xl' : 'max-w-5xl',
+        )}
+      >
         <Link
           href="/"
           className="text-sm font-medium tracking-tight text-foreground"
@@ -42,11 +50,11 @@ export function TopNav({ variant }: TopNavProps) {
               </>
             ) : (
               <>
-                <Link href="/" className={activeClass}>
+                <Link href={resolveSparkPath('/', host)} className={activeClass}>
                   Spark 목록
                 </Link>
                 <Separator orientation="vertical" className="mx-2 h-4" />
-                <Link href="/new" className={linkClass}>
+                <Link href={resolveSparkPath('/new', host)} className={linkClass}>
                   등록
                 </Link>
                 <Separator orientation="vertical" className="mx-2 h-4" />

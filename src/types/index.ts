@@ -62,3 +62,15 @@ export type Fuel = {
   energyType: FuelEnergyType
   createdAt: string
 }
+
+export type BoardCategory = 'notice' | 'qna' | 'free'
+
+export type BoardPost = {
+  id: string
+  authorId: string
+  category: BoardCategory
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}

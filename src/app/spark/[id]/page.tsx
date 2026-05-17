@@ -4,9 +4,12 @@ import { notFound } from 'next/navigation'
 import { LabFormGate } from '@/components/lab/LabFormGate'
 import { LabTimeline } from '@/components/lab/LabTimeline'
 import { SparkDetail } from '@/components/spark/SparkDetail'
+import { SparkDetailLayout } from '@/components/spark/SparkDetailLayout'
 import { Button } from '@/components/ui/button'
 import { listLabLogsBySparkId } from '@/lib/labs'
 import { getSparkById } from '@/lib/sparks'
+import { resolveSparkPath } from '@/lib/routes'
+import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +18,7 @@ type SparkDetailPageProps = {
 }
 
 export default async function SparkDetailPage({ params }: SparkDetailPageProps) {
+  const host = headers().get('host') ?? ''
   let spark: Awaited<ReturnType<typeof getSparkById>> = null
   let logs: Awaited<ReturnType<typeof listLabLogsBySparkId>> = []
 
@@ -35,12 +39,12 @@ export default async function SparkDetailPage({ params }: SparkDetailPageProps) 
     !!userId && (spark.mode === 'open' || spark.authorId === userId)
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-10">
+    <SparkDetailLayout spark={spark} logs={logs}>
       <Button
         variant="ghost"
         size="sm"
         className="-ml-2 mb-4 h-8 text-muted-foreground"
-        render={<Link href="/" />}
+        render={<Link href={resolveSparkPath('/', host)} />}
       >
         ← Spark 목록
       </Button>
@@ -51,6 +55,6 @@ export default async function SparkDetailPage({ params }: SparkDetailPageProps) 
         canWrite={canWriteLab}
         isSignedIn={!!userId}
       />
-    </section>
+    </SparkDetailLayout>
   )
 }

@@ -4,7 +4,7 @@ import { BrandStorySection } from '@/components/www/BrandStorySection'
 import { VisionSection } from '@/components/www/VisionSection'
 import { SloganSection } from '@/components/www/SloganSection'
 import { Button } from '@/components/ui/button'
-import { getAppUrl } from '@/lib/utils'
+import { getAppUrl } from '@/lib/routes'
 
 export default function WwwHomePage() {
   const sparkUrl = getAppUrl('spark')

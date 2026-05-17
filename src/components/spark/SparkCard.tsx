@@ -12,7 +12,9 @@ import {
   SPARK_STAGE_LABELS,
 } from '@/lib/stage-badge'
 import { parseSparkContent } from '@/lib/sparks'
+import { resolveSparkPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
+import { headers } from 'next/headers'
 import type { Spark } from '@/types'
 
 type SparkCardProps = {
@@ -20,14 +22,20 @@ type SparkCardProps = {
 }
 
 export function SparkCard({ spark }: SparkCardProps) {
+  const host = headers().get('host') ?? ''
   const content = parseSparkContent(spark.content)
+  const updatedLabel = new Date(spark.updatedAt).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 
   return (
     <Card
       size="sm"
-      className="shadow-linear border-hairline transition-colors hover:ring-foreground/15"
+      className="shadow-linear flex h-full flex-col border-hairline transition-colors hover:border-primary/30 hover:ring-foreground/15"
     >
-      <CardHeader className="gap-3">
+      <CardHeader className="flex flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
@@ -42,7 +50,10 @@ export function SparkCard({ spark }: SparkCardProps) {
             </span>
           )}
         </div>
-        <Link href={`/${spark.id}`} className="group block space-y-1">
+        <Link
+          href={resolveSparkPath(`/${spark.id}`, host)}
+          className="group block flex-1 space-y-1"
+        >
           <CardTitle className="group-hover:text-primary">
             {spark.title}
           </CardTitle>
@@ -50,6 +61,12 @@ export function SparkCard({ spark }: SparkCardProps) {
             {content.problem}
           </CardDescription>
         </Link>
+        <time
+          dateTime={spark.updatedAt}
+          className="text-xs text-muted-foreground"
+        >
+          {updatedLabel} 업데이트
+        </time>
       </CardHeader>
     </Card>
   )
