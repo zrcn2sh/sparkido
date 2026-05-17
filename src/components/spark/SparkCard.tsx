@@ -6,12 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { SPARK_MODE_LABELS } from '@/lib/constants'
-import {
-  SPARK_STAGE_BADGE_CLASS,
-  SPARK_STAGE_LABELS,
-} from '@/lib/stage-badge'
-import { parseSparkContent } from '@/lib/sparks'
+import { SparkModeLabel } from '@/components/spark/SparkModeLabel'
+import { getSparkStageMeta } from '@/lib/spark-stages'
+import { formatKstDate } from '@/lib/datetime'
+import { parseSparkContent } from '@/lib/spark-content'
 import { resolveSparkPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 import { headers } from 'next/headers'
@@ -24,11 +22,8 @@ type SparkCardProps = {
 export function SparkCard({ spark }: SparkCardProps) {
   const host = headers().get('host') ?? ''
   const content = parseSparkContent(spark.content)
-  const updatedLabel = new Date(spark.updatedAt).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  const stageMeta = getSparkStageMeta(spark.stage)
+  const updatedLabel = formatKstDate(spark.updatedAt)
 
   return (
     <Card
@@ -39,11 +34,21 @@ export function SparkCard({ spark }: SparkCardProps) {
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
-            className={cn('font-medium', SPARK_STAGE_BADGE_CLASS[spark.stage])}
+            className={cn('font-medium', stageMeta.badgeClass)}
           >
-            {SPARK_STAGE_LABELS[spark.stage]}
+            <span className="mr-0.5" aria-hidden>
+              {stageMeta.icon}
+            </span>
+            {stageMeta.label}
           </Badge>
-          <Badge variant="secondary">{SPARK_MODE_LABELS[spark.mode]}</Badge>
+          <Badge variant="secondary">
+            <SparkModeLabel mode={spark.mode} />
+          </Badge>
+          {spark.visibility === 'private' && (
+            <Badge variant="outline" className="text-muted-foreground">
+              비공개
+            </Badge>
+          )}
           {spark.voltage > 0 && (
             <span className="text-xs text-muted-foreground">
               ⚡ {spark.voltage}V

@@ -42,7 +42,7 @@ export function BrandStorySection() {
         className="pointer-events-none absolute inset-x-0 -top-24 h-24 bg-gradient-to-b from-muted/35 via-background/90 to-background"
       />
       <div className="border-hairline border-t border-border bg-background pb-24 pt-4">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <ScrollReveal className="mx-auto max-w-2xl">
             <p className="text-center text-sm font-medium uppercase tracking-[0.22em] text-primary md:text-base">
               Brand Story

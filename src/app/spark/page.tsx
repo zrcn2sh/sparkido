@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { SparkCard } from '@/components/spark/SparkCard'
 import { SparkPageShell } from '@/components/spark/SparkPageShell'
@@ -13,8 +14,10 @@ export default async function SparkListPage() {
   let sparks: Awaited<ReturnType<typeof listSparks>> = []
   let loadError: string | null = null
 
+  const { userId } = await auth()
+
   try {
-    sparks = await listSparks()
+    sparks = await listSparks(userId)
   } catch (error) {
     console.error('[SparkListPage]', error)
     loadError =

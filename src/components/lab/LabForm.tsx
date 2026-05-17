@@ -2,28 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { SparkStagePicker } from '@/components/spark/SparkStagePicker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import type { LabLogType } from '@/types'
-
-const LAB_TYPES: LabLogType[] = [
-  '개발',
-  '리서치',
-  '고객 인터뷰',
-  'AI 프롬프트',
-  '디자인',
-  '피벗',
-  '출시',
-]
+import { parseTechStackInput } from '@/lib/tech-stack'
+import type { SparkStage } from '@/types'
 
 type LabFormProps = {
   sparkId: string
@@ -33,7 +19,7 @@ export function LabForm({ sparkId }: LabFormProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-  const [type, setType] = useState<LabLogType>('개발')
+  const [stage, setStage] = useState<SparkStage>('build')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -48,9 +34,10 @@ export function LabForm({ sparkId }: LabFormProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type,
+          stage,
           content: form.get('content'),
-          codeSnippet: form.get('codeSnippet') || undefined,
+          techStack: parseTechStackInput(String(form.get('techStack') ?? '')),
+          sourceUrl: form.get('sourceUrl') || undefined,
         }),
       })
 
@@ -71,7 +58,7 @@ export function LabForm({ sparkId }: LabFormProps) {
       }
 
       formEl.reset()
-      setType('개발')
+      setStage('build')
       router.refresh()
     } catch (err) {
       console.error('[LabForm]', err)
@@ -87,33 +74,36 @@ export function LabForm({ sparkId }: LabFormProps) {
         <CardTitle className="text-base">Lab 기록 추가</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>타입</Label>
-            <Select value={type} onValueChange={(v) => setType(v as LabLogType)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LAB_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <SparkStagePicker value={stage} onChange={setStage} disabled={pending} />
           <div className="space-y-2">
             <Label htmlFor="content">내용 *</Label>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              마크다운 형식으로 저장·표시됩니다. 목록, 링크, 강조 등을 사용할 수
+              있습니다.
+            </p>
             <Textarea id="content" name="content" required rows={4} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="codeSnippet">코드 스니펫 (선택)</Label>
-            <Textarea
-              id="codeSnippet"
-              name="codeSnippet"
-              rows={3}
-              className="font-mono"
+            <Label htmlFor="techStack">기술 스택 (쉼표로 구분, 선택)</Label>
+            <Input
+              id="techStack"
+              name="techStack"
+              placeholder="Next.js, D1, Tailwind"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sourceUrl">GitHub / 참고 링크 (선택)</Label>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              저장소, 커밋, PR, 브랜치 URL을 붙이면 변경 이력·코드를 GitHub에서
+              바로 확인할 수 있습니다. 긴 코드는 붙이지 마세요.
+            </p>
+            <Input
+              id="sourceUrl"
+              name="sourceUrl"
+              type="url"
+              inputMode="url"
+              placeholder="https://github.com/owner/repo/commit/…"
             />
           </div>
           {error && (

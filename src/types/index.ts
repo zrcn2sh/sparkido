@@ -1,17 +1,10 @@
 export type SparkMode = 'solo' | 'open'
 
-export type SparkStage = 'idea' | 'validating' | 'building' | 'launched'
+export type SparkVisibility = 'public' | 'private'
+
+export type SparkStage = 'idea' | 'validate' | 'build' | 'live'
 
 export type LabStatus = 'building' | 'live'
-
-export type LabLogType =
-  | '개발'
-  | '리서치'
-  | '고객 인터뷰'
-  | 'AI 프롬프트'
-  | '디자인'
-  | '피벗'
-  | '출시'
 
 export type FuelEnergyType = '응원하기' | '기술 지원' | '시장성 확인'
 
@@ -19,13 +12,14 @@ export type SparkContent = {
   problem: string
   audience: string
   solution: string
-  techStack?: string[]
+  notes?: string
 }
 
 export type Spark = {
   id: string
   authorId: string
   mode: SparkMode
+  visibility: SparkVisibility
   title: string
   content: string
   stage: SparkStage
@@ -47,9 +41,12 @@ export type LabLog = {
   id: string
   labId: string
   stepNumber: number
-  type: LabLogType
+  stage: SparkStage
   content: string
+  techStack: string[] | null
+  sourceUrl: string | null
   promptText: string | null
+  /** @deprecated 신규 Lab은 sourceUrl 사용. 기존 데이터만 표시 */
   codeSnippet: string | null
   createdAt: string
 }

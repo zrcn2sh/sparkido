@@ -1,3 +1,4 @@
+import { nowKstIso } from '@/lib/datetime'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -5,7 +6,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       service: 'ido',
-      timestamp: new Date().toISOString(),
+      timestamp: nowKstIso(),
     })
   } catch (error) {
     console.error('[GET /api/health]', error)

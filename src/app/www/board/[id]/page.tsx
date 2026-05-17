@@ -6,22 +6,13 @@ import { MarkdownBody } from '@/components/markdown/MarkdownBody'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getBoardCategoryMeta } from '@/lib/board-categories'
+import { formatKstDateTime } from '@/lib/datetime'
 import { getBoardPostById } from '@/lib/board'
 
 export const dynamic = 'force-dynamic'
 
 type BoardDetailPageProps = {
   params: { id: string }
-}
-
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export default async function BoardDetailPage({ params }: BoardDetailPageProps) {
@@ -57,7 +48,7 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
           dateTime={post.updatedAt}
           className="mt-2 block text-xs text-muted-foreground"
         >
-          {formatDateTime(post.updatedAt)}
+          {formatKstDateTime(post.updatedAt)}
           {post.updatedAt !== post.createdAt && ' (수정됨)'}
         </time>
       </header>

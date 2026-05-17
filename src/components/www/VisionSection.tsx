@@ -18,7 +18,7 @@ export function VisionSection() {
         className="pointer-events-none absolute inset-x-0 -top-24 h-24 bg-gradient-to-b from-background via-background/80 to-muted/35"
       />
       <div className="border-hairline border-t border-border bg-muted/35">
-        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
           <ScrollReveal className="mx-auto max-w-2xl text-center">
             <p
               id="vision-heading"

@@ -1,8 +1,8 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import { jsonError, jsonUnauthorized, isSparkMode, isSparkStage } from '@/lib/api'
+import { jsonError, jsonUnauthorized } from '@/lib/api'
+import { validateCreateSparkInput } from '@/lib/spark-form'
 import { createSpark, listSparks } from '@/lib/sparks'
-import type { CreateSparkInput } from '@/lib/sparks'
 
 export async function GET() {
   try {
@@ -24,45 +24,19 @@ export async function POST(request: Request) {
       return jsonUnauthorized()
     }
 
-    const body = (await request.json()) as Partial<CreateSparkInput>
-
-    if (!body.problem?.trim()) {
-      return jsonError('어떤 불편함을 해결하고 싶은지 입력해 주세요.')
-    }
-    if (!body.audience?.trim()) {
-      return jsonError('누가 이 문제를 겪는지 입력해 주세요.')
-    }
-    if (!body.solution?.trim()) {
-      return jsonError('어떻게 풀 생각인지 입력해 주세요.')
-    }
-    if (!isSparkStage(body.stage)) {
-      return jsonError('진행 단계가 올바르지 않습니다.')
-    }
-    if (!isSparkMode(body.mode)) {
-      return jsonError('참여 방식(solo/open)이 올바르지 않습니다.')
+    const body = await request.json()
+    const validated = validateCreateSparkInput(body)
+    if (!validated.ok) {
+      return jsonError(validated.error)
     }
 
-    const spark = await createSpark(
-      {
-        problem: body.problem,
-        audience: body.audience,
-        solution: body.solution,
-        stage: body.stage,
-        mode: body.mode,
-        techStack: Array.isArray(body.techStack)
-          ? body.techStack.map(String)
-          : undefined,
-        title: body.title,
-      },
-      userId,
-    )
+    const spark = await createSpark(validated.data, userId)
 
     return NextResponse.json({ spark }, { status: 201 })
   } catch (error) {
     console.error('[POST /api/sparks]', error)
-    return NextResponse.json(
-      { error: 'Spark 등록에 실패했습니다.' },
-      { status: 500 },
-    )
+    const message =
+      error instanceof Error ? error.message : 'Spark 등록에 실패했습니다.'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

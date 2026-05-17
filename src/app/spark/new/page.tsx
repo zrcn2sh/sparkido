@@ -17,10 +17,12 @@ export default async function SparkNewPage() {
 
   return (
     <SparkPageShell width="md" className="py-12">
-      <h1 className="text-2xl font-bold">Spark 등록</h1>
-      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-        아이디어를 등록하고 실행의 궤적을 남겨 보세요.
-      </p>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-bold">Spark 등록</h1>
+        <p className="text-sm text-muted-foreground">
+          아이디어를 등록하고 실행의 궤적을 남겨 보세요.
+        </p>
+      </div>
       <SparkForm />
     </SparkPageShell>
   )

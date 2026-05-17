@@ -1,92 +1,56 @@
-import { SPARK_STAGE_LABELS } from '@/lib/stage-badge'
+import { formatKstDate, parseStoredDate } from '@/lib/datetime'
+import { getSparkStageMeta } from '@/lib/spark-stages'
 import { cn } from '@/lib/utils'
-import type { LabLog, Spark } from '@/types'
-
-type RouteNodeState = 'spark' | 'done' | 'bulb' | 'upcoming'
+import type { LabLog, SparkMode } from '@/types'
 
 type RouteNode = {
   id: string
+  icon: string
   label: string
   sublabel?: string
-  state: RouteNodeState
+  ringClass: string
+  faded?: boolean
 }
 
 type IdeaRouteBarProps = {
-  spark: Spark
+  sparkRouteLabel: string
+  sparkMode: SparkMode
   logs: LabLog[]
   variant: 'sidebar' | 'mobile'
   className?: string
 }
 
-function buildRouteNodes(spark: Spark, logs: LabLog[]): RouteNode[] {
+function buildRouteNodes(sparkRouteLabel: string, logs: LabLog[]): RouteNode[] {
   const sorted = [...logs].sort(
     (a, b) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      parseStoredDate(a.createdAt).getTime() -
+      parseStoredDate(b.createdAt).getTime(),
   )
+
+  const ideaMeta = getSparkStageMeta('idea')
 
   const nodes: RouteNode[] = [
     {
       id: 'spark',
+      icon: ideaMeta.icon,
       label: 'Spark',
-      sublabel: spark.title,
-      state: sorted.length === 0 ? 'spark' : 'done',
+      sublabel: sparkRouteLabel,
+      ringClass: ideaMeta.routeRing,
     },
   ]
 
   for (const log of sorted) {
+    const meta = getSparkStageMeta(log.stage)
     nodes.push({
       id: log.id,
-      label: log.type,
-      sublabel: new Date(log.createdAt).toLocaleDateString('ko-KR'),
-      state: 'done',
-    })
-  }
-
-  const last = nodes[nodes.length - 1]
-  if (spark.stage === 'launched') {
-    nodes.push({
-      id: 'launched',
-      label: '출시',
-      sublabel: SPARK_STAGE_LABELS.launched,
-      state: 'bulb',
-    })
-  } else if (last) {
-    last.state = 'spark'
-    nodes.push({
-      id: 'upcoming',
-      label: '다음 단계',
-      sublabel: SPARK_STAGE_LABELS[spark.stage],
-      state: 'upcoming',
+      icon: meta.icon,
+      label: meta.label,
+      sublabel: formatKstDate(log.createdAt),
+      ringClass: meta.routeRing,
     })
   }
 
   return nodes
-}
-
-const stateStyles: Record<
-  RouteNodeState,
-  { ring: string; dot: string; icon: string }
-> = {
-  spark: {
-    ring: 'border-blue-400 bg-blue-50',
-    dot: 'bg-blue-400',
-    icon: '⚡',
-  },
-  done: {
-    ring: 'border-teal-400 bg-teal-50',
-    dot: 'bg-teal-400',
-    icon: '✓',
-  },
-  bulb: {
-    ring: 'border-teal-400 bg-teal-50',
-    dot: 'bg-teal-400',
-    icon: '💡',
-  },
-  upcoming: {
-    ring: 'border-dashed border-muted-foreground/40 bg-transparent',
-    dot: 'bg-muted-foreground/30',
-    icon: '○',
-  },
 }
 
 function RouteNodeItem({
@@ -98,27 +62,24 @@ function RouteNodeItem({
   isLast: boolean
   variant: 'sidebar' | 'mobile'
 }) {
-  const styles = stateStyles[node.state]
-  const faded = node.state === 'upcoming'
-
   if (variant === 'mobile') {
     return (
       <li
         className={cn(
           'flex shrink-0 flex-col items-center gap-1.5 px-1',
-          faded && 'opacity-50',
+          node.faded && 'opacity-50',
         )}
       >
         <span
           className={cn(
-            'flex size-9 items-center justify-center rounded-full border text-xs',
-            styles.ring,
+            'flex size-9 items-center justify-center rounded-full border text-base',
+            node.ringClass,
           )}
           aria-hidden
         >
-          {styles.icon}
+          {node.icon}
         </span>
-        <span className="max-w-[4.5rem] truncate text-center text-[10px] font-medium">
+        <span className="max-w-[5rem] truncate text-center text-[10px] font-medium">
           {node.label}
         </span>
       </li>
@@ -126,7 +87,7 @@ function RouteNodeItem({
   }
 
   return (
-    <li className={cn('relative flex gap-3 pb-6', faded && 'opacity-60')}>
+    <li className={cn('relative flex gap-3 pb-6', node.faded && 'opacity-60')}>
       {!isLast && (
         <span
           className="absolute left-[15px] top-8 h-[calc(100%-1rem)] w-px bg-border"
@@ -135,12 +96,12 @@ function RouteNodeItem({
       )}
       <span
         className={cn(
-          'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border text-xs',
-          styles.ring,
+          'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border text-sm',
+          node.ringClass,
         )}
         aria-hidden
       >
-        {styles.icon}
+        {node.icon}
       </span>
       <div className="min-w-0 pt-0.5">
         <p className="text-xs font-medium text-foreground">{node.label}</p>
@@ -155,17 +116,18 @@ function RouteNodeItem({
 }
 
 export function IdeaRouteBar({
-  spark,
+  sparkRouteLabel,
+  sparkMode,
   logs,
   variant,
   className,
 }: IdeaRouteBarProps) {
-  const nodes = buildRouteNodes(spark, logs)
+  const nodes = buildRouteNodes(sparkRouteLabel, logs)
 
   if (variant === 'mobile') {
     return (
       <nav
-        aria-label="진행 노선"
+        aria-label="실행 궤적"
         className={cn(
           'rounded-lg border-hairline border border-border bg-card p-3 shadow-linear',
           className,
@@ -190,7 +152,7 @@ export function IdeaRouteBar({
 
   return (
     <nav
-      aria-label="진행 노선"
+      aria-label="실행 궤적"
       className={cn(
         'rounded-lg border-hairline border border-border bg-card p-4 shadow-linear',
         className,
@@ -198,7 +160,7 @@ export function IdeaRouteBar({
     >
       <p className="text-sm font-medium">Idea Route</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {spark.mode === 'solo' ? '단일 궤적' : 'Open Do · 분기는 Phase 2'}
+        {sparkMode === 'solo' ? '단일 궤적' : 'Open Do · 분기는 Phase 2'}
       </p>
       <ol className="mt-4">
         {nodes.map((node, i) => (

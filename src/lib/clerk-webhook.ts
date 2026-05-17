@@ -1,8 +1,6 @@
 import type { SessionWebhookEvent, WebhookEvent } from '@clerk/nextjs/server'
-import {
-  clerkTimestampToIso,
-  recordLoginEvent,
-} from '@/lib/login-events'
+import { msToKstIso } from '@/lib/datetime'
+import { recordLoginEvent } from '@/lib/login-events'
 
 function sessionActivity(
   data: SessionWebhookEvent['data'],
@@ -38,7 +36,7 @@ export async function handleClerkWebhookEvent(
       clerkUserId: data.user_id,
       clerkSessionId: data.id,
       eventType: evt.type,
-      signedInAt: clerkTimestampToIso(data.created_at),
+      signedInAt: msToKstIso(data.created_at),
       ...activity,
     })
 
@@ -54,7 +52,7 @@ export async function handleClerkWebhookEvent(
       clerkUserId: data.user_id,
       clerkSessionId: data.id,
       eventType: evt.type,
-      signedOutAt: clerkTimestampToIso(data.updated_at),
+      signedOutAt: msToKstIso(data.updated_at),
       ...activity,
     })
 

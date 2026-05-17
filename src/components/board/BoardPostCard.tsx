@@ -5,18 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { formatKstDate } from '@/lib/datetime'
 import type { BoardPost } from '@/types'
 
 type BoardPostCardProps = {
   post: BoardPost
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 export function BoardPostCard({ post }: BoardPostCardProps) {
@@ -39,7 +32,7 @@ export function BoardPostCard({ post }: BoardPostCardProps) {
           dateTime={post.createdAt}
           className="text-xs text-muted-foreground"
         >
-          {formatDate(post.createdAt)}
+          {formatKstDate(post.createdAt)}
         </time>
       </CardHeader>
     </Card>

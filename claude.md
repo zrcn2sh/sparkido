@@ -277,4 +277,13 @@ NEXT_PUBLIC_SPARK_URL=https://spark.idosquare.co.kr
 - 보더: 0.5px solid
 - 라운드: md(8px) / lg(12px)
 
-*작성일: 2025.05.17 — Ido 프로젝트 기획 확정*
+## Spark 권한 정책:
+- Spark 완전 삭제: 불가 (관리자만 예외)
+- Spark 비공개: A(작성자)만 가능
+  단, B의 Lab이 1개 이상이면 비공개 전환 시 경고 표시
+  "이 Spark에 다른 참여자의 기록이 있습니다"
+- Lab 비공개: 각 작성자 본인만 가능
+- Open Do → Solo Do 전환:
+  참여자 Lab이 없을 때만 허용
+- 주요 기여자 표시:
+  Lab 수 기준 상위 기여자를 Spark 상세에 표시

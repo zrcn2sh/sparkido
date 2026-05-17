@@ -1,5 +1,7 @@
+import { nowKstIso } from '@/lib/datetime'
 import { createId } from '@/lib/id'
 import { getDb } from '@/lib/db'
+import { assertValidUtf8Text } from '@/lib/text'
 import type { BoardCategory, BoardPost } from '@/types'
 
 type BoardPostRow = {
@@ -72,9 +74,9 @@ export async function createBoardPost(
 ): Promise<BoardPost> {
   const db = await getDb()
   const id = createId()
-  const now = new Date().toISOString()
-  const title = input.title.trim()
-  const content = input.content.trim()
+  const now = nowKstIso()
+  const title = assertValidUtf8Text(input.title, '제목')
+  const content = assertValidUtf8Text(input.content, '내용')
 
   await db
     .prepare(
@@ -102,9 +104,15 @@ export async function updateBoardPost(
   const existing = await getBoardPostById(id)
   if (!existing) return null
 
-  const title = input.title?.trim() ?? existing.title
-  const content = input.content?.trim() ?? existing.content
-  const now = new Date().toISOString()
+  const title =
+    input.title !== undefined
+      ? assertValidUtf8Text(input.title, '제목')
+      : existing.title
+  const content =
+    input.content !== undefined
+      ? assertValidUtf8Text(input.content, '내용')
+      : existing.content
+  const now = nowKstIso()
 
   const db = await getDb()
   await db

@@ -12,14 +12,7 @@ export function jsonForbidden(message: string) {
   return NextResponse.json({ error: message }, { status: 403 })
 }
 
-export function isSparkStage(value: unknown): value is import('@/types').SparkStage {
-  return (
-    value === 'idea' ||
-    value === 'validating' ||
-    value === 'building' ||
-    value === 'launched'
-  )
-}
+export { isSparkStage } from '@/lib/spark-stages'
 
 export function isSparkMode(value: unknown): value is import('@/types').SparkMode {
   return value === 'solo' || value === 'open'

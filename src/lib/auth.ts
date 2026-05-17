@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 
 export type SessionUser = {
   id: string
@@ -32,4 +32,21 @@ export async function requireSession(): Promise<SessionUser> {
     throw new Error('로그인이 필요합니다.')
   }
   return session
+}
+
+export async function getUserDisplayName(userId: string): Promise<string> {
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const fullName =
+      user.fullName?.trim() ||
+      [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
+    if (fullName) return fullName
+    if (user.username) return user.username
+    const email = user.emailAddresses[0]?.emailAddress
+    if (email) return email
+  } catch {
+    /* Clerk 조회 실패 시 fallback */
+  }
+  return '알 수 없음'
 }

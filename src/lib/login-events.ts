@@ -14,10 +14,6 @@ export type RecordLoginEventInput = {
   country?: string | null
 }
 
-export function clerkTimestampToIso(timestampMs: number): string {
-  return new Date(timestampMs).toISOString()
-}
-
 /** Webhook 재전송 시 clerk_event_id UNIQUE로 중복 방지 */
 export async function recordLoginEvent(
   input: RecordLoginEventInput,

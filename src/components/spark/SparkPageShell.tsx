@@ -1,3 +1,4 @@
+import { SITE_HORIZONTAL_PADDING_CLASS, SITE_MAX_WIDTH_CLASS } from '@/lib/layout'
 import { cn } from '@/lib/utils'
 
 type SparkPageShellProps = {
@@ -10,7 +11,7 @@ type SparkPageShellProps = {
 const widthClass = {
   md: 'max-w-2xl',
   lg: 'max-w-3xl',
-  xl: 'max-w-5xl',
+  xl: SITE_MAX_WIDTH_CLASS,
 } as const
 
 /** Spark 목록·등록 등 중앙 정렬 셸 */
@@ -22,7 +23,8 @@ export function SparkPageShell({
   return (
     <section
       className={cn(
-        'mx-auto w-full px-4 py-10 sm:px-6',
+        'mx-auto w-full py-10',
+        SITE_HORIZONTAL_PADDING_CLASS,
         widthClass[width],
         className,
       )}

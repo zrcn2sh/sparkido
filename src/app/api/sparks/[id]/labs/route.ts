@@ -1,19 +1,10 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'
+import { isSparkStage } from '@/lib/spark-stages'
 import { createLabLog, listLabLogsBySparkId } from '@/lib/labs'
+import { parseTechStackInput } from '@/lib/tech-stack'
 import { getSparkById } from '@/lib/sparks'
-import type { LabLogType } from '@/types'
-
-const LAB_TYPES: LabLogType[] = [
-  '개발',
-  '리서치',
-  '고객 인터뷰',
-  'AI 프롬프트',
-  '디자인',
-  '피벗',
-  '출시',
-]
 
 type RouteContext = { params: { id: string } }
 
@@ -57,26 +48,34 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     const body = (await request.json()) as {
-      type?: string
+      stage?: string
       content?: string
+      techStack?: unknown
       promptText?: string
-      codeSnippet?: string
+      sourceUrl?: string
     }
 
-    if (!body.type || !LAB_TYPES.includes(body.type as LabLogType)) {
-      return jsonError('Lab 타입이 올바르지 않습니다.')
+    if (!body.stage || !isSparkStage(body.stage)) {
+      return jsonError('작업 단계(Idea/Validate/Build/Live)를 선택해 주세요.')
     }
     if (!body.content?.trim()) {
       return jsonError('Lab 내용을 입력해 주세요.')
     }
 
+    const techStack = Array.isArray(body.techStack)
+      ? parseTechStackInput(body.techStack.map(String).join(', '))
+      : typeof body.techStack === 'string'
+        ? parseTechStackInput(body.techStack)
+        : []
+
     const log = await createLabLog(
       params.id,
       {
-        type: body.type as LabLogType,
+        stage: body.stage,
         content: body.content,
+        techStack,
         promptText: body.promptText,
-        codeSnippet: body.codeSnippet,
+        sourceUrl: body.sourceUrl,
       },
       userId,
     )
