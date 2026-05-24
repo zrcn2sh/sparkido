@@ -27,7 +27,7 @@ export default async function SparkEditPage({ params }: SparkEditPageProps) {
   const spark = await getSparkById(params.id)
   if (!spark) notFound()
 
-  if (!canEditSpark(userId, spark)) {
+  if (!(await canEditSpark(userId, spark))) {
     redirect(resolveSparkPath(`/${params.id}`, host))
   }
 
@@ -47,10 +47,12 @@ export default async function SparkEditPage({ params }: SparkEditPageProps) {
       >
         ← Spark 상세
       </Button>
-      <h1 className="text-xl font-medium">Spark 수정</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        제목·기타·참여 방식·공개 설정만 변경할 수 있습니다.
-      </p>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-bold">Spark 수정</h1>
+        <p className="text-sm text-muted-foreground">
+          제목·기타·참여 방식·공개 설정만 변경할 수 있습니다.
+        </p>
+      </div>
       <SparkEditForm
         spark={spark}
         otherContributorLabs={otherContributorLabs}

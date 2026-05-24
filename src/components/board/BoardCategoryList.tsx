@@ -3,6 +3,8 @@ import { auth } from '@clerk/nextjs/server'
 import { BoardPostCard } from '@/components/board/BoardPostCard'
 import { Button } from '@/components/ui/button'
 import { getBoardCategoryMeta } from '@/lib/board-categories'
+import { getDisplayNamesByUserIds } from '@/lib/auth'
+import { canCreateBoardPost } from '@/lib/board-permissions'
 import { listBoardPosts } from '@/lib/board'
 import type { BoardCategory } from '@/types'
 
@@ -13,12 +15,16 @@ type BoardCategoryListProps = {
 export async function BoardCategoryList({ category }: BoardCategoryListProps) {
   const { userId } = await auth()
   const meta = getBoardCategoryMeta(category)
+  const canWrite = userId ? await canCreateBoardPost(userId, category) : false
 
   let posts: Awaited<ReturnType<typeof listBoardPosts>> = []
+  let authorNames: Record<string, string> = {}
   let loadError: string | null = null
 
   try {
     posts = await listBoardPosts(category)
+    const authorIds = Array.from(new Set(posts.map((p) => p.authorId)))
+    authorNames = await getDisplayNamesByUserIds(authorIds)
   } catch (error) {
     console.error('[BoardCategoryList]', error)
     loadError =
@@ -32,7 +38,7 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
           <h1>{meta.label}</h1>
           <p className="mt-2 text-muted-foreground">{meta.description}</p>
         </div>
-        {userId && (
+        {canWrite && (
           <Button
             size="sm"
             className="shrink-0"
@@ -40,6 +46,9 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
           >
             글쓰기
           </Button>
+        )}
+        {userId && !canWrite && category === 'notice' && (
+          <p className="text-xs text-muted-foreground">공지는 관리자만 작성할 수 있습니다.</p>
         )}
       </header>
 
@@ -54,7 +63,7 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
           <p className="text-sm text-muted-foreground">
             아직 게시글이 없습니다.
           </p>
-          {userId ? (
+          {canWrite ? (
             <Button
               className="mt-6"
               size="sm"
@@ -64,7 +73,9 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
             </Button>
           ) : (
             <p className="mt-4 text-xs text-muted-foreground">
-              글을 작성하려면 로그인이 필요합니다.
+              {userId && category === 'notice'
+                ? '공지는 관리자만 작성할 수 있습니다.'
+                : '글을 작성하려면 로그인이 필요합니다.'}
             </p>
           )}
         </div>
@@ -74,7 +85,10 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
         <ul className="mt-8 space-y-3">
           {posts.map((post) => (
             <li key={post.id}>
-              <BoardPostCard post={post} />
+              <BoardPostCard
+                post={post}
+                authorName={authorNames[post.authorId] ?? '알 수 없음'}
+              />
             </li>
           ))}
         </ul>

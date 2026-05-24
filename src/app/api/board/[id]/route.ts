@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'
+import { canManageBoardPost } from '@/lib/board-permissions'
 import {
   deleteBoardPost,
   getBoardPostById,
@@ -43,8 +44,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         { status: 404 },
       )
     }
-    if (post.authorId !== userId) {
-      return jsonForbidden('본인 게시글만 수정할 수 있습니다.')
+    if (!(await canManageBoardPost(userId, post))) {
+      return jsonForbidden('게시글을 수정할 권한이 없습니다.')
     }
 
     const body = (await request.json()) as Partial<UpdateBoardPostInput>
@@ -85,8 +86,8 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
         { status: 404 },
       )
     }
-    if (post.authorId !== userId) {
-      return jsonForbidden('본인 게시글만 삭제할 수 있습니다.')
+    if (!(await canManageBoardPost(userId, post))) {
+      return jsonForbidden('게시글을 삭제할 권한이 없습니다.')
     }
 
     await deleteBoardPost(params.id)

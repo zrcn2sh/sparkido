@@ -2,8 +2,8 @@
 
 **Idosquare** — 1인 개발자를 위한 아이디어(Spark) 등록과 실행 기록(Lab) 커뮤니티.
 
-- **www** · 브랜드 소개 (`www.idosquare.co.kr`)
-- **spark** · Spark / Lab 서비스 (`spark.idosquare.co.kr`)
+- **spark** · 메인 · Spark / Lab (`spark.idosquare.co.kr`, `www` 루트는 여기로 리다이렉트)
+- **www** · 회사 소개 `/info`, 게시판 `/board` (`www.idosquare.co.kr`)
 
 > 아이디어는 누구나 가질 수 있지만, 실행의 궤적은 당신만의 것입니다.
 
@@ -100,9 +100,32 @@ sparkido/
 
 1. GitHub 저장소 연결 후 빌드
 2. D1 바인딩 (`DB`) 및 환경 변수 설정
-3. `npm run db:migrate:remote`
+3. `npm run db:migrate:remote` (아래 D1 오류 참고)
 4. Clerk에 프로덕션 도메인·Redirect URL 등록
 5. (선택) Clerk Webhook → `https://your-domain/api/webhooks/clerk`
+
+### D1 API 오류가 날 때
+
+`A request to the Cloudflare API (.../d1/database/.../query) failed` 는 보통 아래 중 하나입니다.
+
+| 원인 | 확인·조치 |
+|------|-----------|
+| **원격 마이그레이션 미적용** | `npm run db:migrate:remote` 실행. 최근 추가: `0010_user_roles`, `0011_board_comments` |
+| **Pages에 D1 바인딩 없음** | Cloudflare Dashboard → Pages → 프로젝트 → Settings → Bindings → D1 이름 **`DB`**, DB `sparkido` |
+| **Wrangler 로그인/토큰** | `npx wrangler login` 또는 `CLOUDFLARE_API_TOKEN` (D1 Edit 권한) |
+| **컬럼 없음** (배포 직후) | `npx wrangler d1 execute sparkido --remote --command "PRAGMA table_info(user_profiles);"` 에 `role` 있는지 확인 |
+
+원격 DB 상태 확인:
+
+```bash
+npx wrangler d1 execute sparkido --remote --command "SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+마이그레이션만 다시 적용:
+
+```bash
+npm run db:migrate:remote
+```
 
 자세한 로드맵은 [`claude.md`](./claude.md)를 참고하세요.
 

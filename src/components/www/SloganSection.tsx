@@ -7,11 +7,7 @@ export function SloganSection() {
       aria-labelledby="slogan-heading"
       className="relative scroll-mt-16"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-28 h-28 bg-gradient-to-b from-background via-background/80 to-transparent"
-      />
-      <div className="border-hairline border-t border-border bg-muted/35">
+      <div className="mt-4 border-hairline border-t border-border bg-muted/35 pt-6 md:mt-8 md:pt-10">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
           <ScrollReveal className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-medium uppercase tracking-[0.22em] text-primary md:text-base">

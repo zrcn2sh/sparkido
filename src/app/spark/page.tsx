@@ -3,7 +3,10 @@ import Link from 'next/link'
 import { SparkCard } from '@/components/spark/SparkCard'
 import { SparkPageShell } from '@/components/spark/SparkPageShell'
 import { Button } from '@/components/ui/button'
+import { getDisplayNamesByUserIds } from '@/lib/auth'
+import { countLabParticipantsBySparkIds } from '@/lib/labs'
 import { listSparks } from '@/lib/sparks'
+import { isAdmin } from '@/lib/user-role'
 import { resolveSparkPath } from '@/lib/routes'
 import { headers } from 'next/headers'
 
@@ -15,9 +18,21 @@ export default async function SparkListPage() {
   let loadError: string | null = null
 
   const { userId } = await auth()
+  const viewerIsAdmin = userId ? await isAdmin(userId) : false
+
+  let authorNames: Record<string, string> = {}
+
+  let participantCounts: Record<string, number> = {}
 
   try {
-    sparks = await listSparks(userId)
+    sparks = await listSparks()
+    const authorIds = Array.from(new Set(sparks.map((s) => s.authorId)))
+    const [names, counts] = await Promise.all([
+      getDisplayNamesByUserIds(authorIds),
+      countLabParticipantsBySparkIds(sparks.map((s) => s.id)),
+    ])
+    authorNames = names
+    participantCounts = counts
   } catch (error) {
     console.error('[SparkListPage]', error)
     loadError =
@@ -67,7 +82,13 @@ export default async function SparkListPage() {
         <ul className="mt-8 grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
           {sparks.map((spark) => (
             <li key={spark.id} className="h-full">
-              <SparkCard spark={spark} />
+              <SparkCard
+                spark={spark}
+                viewerId={userId}
+                viewerIsAdmin={viewerIsAdmin}
+                authorName={authorNames[spark.authorId] ?? '알 수 없음'}
+                participantCount={participantCounts[spark.id] ?? 0}
+              />
             </li>
           ))}
         </ul>

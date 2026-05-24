@@ -1,39 +1,47 @@
 import Link from 'next/link'
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { MarkdownBody } from '@/components/markdown/MarkdownBody'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatKstDate } from '@/lib/datetime'
+import { cn } from '@/lib/utils'
 import type { BoardPost } from '@/types'
 
 type BoardPostCardProps = {
   post: BoardPost
+  authorName: string
 }
 
-export function BoardPostCard({ post }: BoardPostCardProps) {
-  const excerpt = post.content.replace(/\s+/g, ' ').trim().slice(0, 120)
-
+export function BoardPostCard({ post, authorName }: BoardPostCardProps) {
   return (
     <Card
       size="sm"
       className="shadow-linear border-hairline transition-colors hover:border-primary/30"
     >
       <CardHeader className="gap-2">
-        <Link href={`/board/${post.id}`} className="group block space-y-1">
-          <CardTitle className="group-hover:text-primary">{post.title}</CardTitle>
-          <CardDescription className="line-clamp-2">
-            {excerpt}
-            {post.content.length > 120 ? '…' : ''}
-          </CardDescription>
-        </Link>
-        <time
-          dateTime={post.createdAt}
-          className="text-xs text-muted-foreground"
-        >
-          {formatKstDate(post.createdAt)}
-        </time>
+        <div className="flex items-start justify-between gap-3">
+          <Link
+            href={`/board/${post.id}`}
+            className="group min-w-0 flex-1 space-y-2"
+          >
+            <CardTitle className="group-hover:text-primary">{post.title}</CardTitle>
+            <div
+              className={cn(
+                'pointer-events-none line-clamp-3 overflow-hidden text-muted-foreground',
+                '[&_.markdown-body]:text-muted-foreground',
+              )}
+            >
+              <MarkdownBody content={post.content} compact />
+            </div>
+          </Link>
+          <p className="shrink-0 text-right text-xs leading-snug text-muted-foreground">
+            <span className="block">{authorName}</span>
+            <time
+              dateTime={post.createdAt}
+              className="mt-0.5 block tabular-nums"
+            >
+              {formatKstDate(post.createdAt)}
+            </time>
+          </p>
+        </div>
       </CardHeader>
     </Card>
   )

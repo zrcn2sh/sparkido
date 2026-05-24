@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getBoardCategoryMeta } from '@/lib/board-categories'
 import { formatKstDateTime } from '@/lib/datetime'
+import { BoardCommentsSection } from '@/components/board/BoardCommentsSection'
+import { getUserDisplayName } from '@/lib/auth'
+import { canManageBoardPost } from '@/lib/board-permissions'
 import { getBoardPostById } from '@/lib/board'
 
 export const dynamic = 'force-dynamic'
@@ -28,8 +31,9 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
 
   if (!post) notFound()
 
-  const isOwner = !!userId && post.authorId === userId
+  const canManage = await canManageBoardPost(userId, post)
   const categoryMeta = getBoardCategoryMeta(post.category)
+  const authorName = await getUserDisplayName(post.authorId)
 
   return (
     <article className="max-w-3xl">
@@ -43,17 +47,22 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
       </Button>
 
       <header>
-        <h1>{post.title}</h1>
-        <time
-          dateTime={post.updatedAt}
-          className="mt-2 block text-xs text-muted-foreground"
-        >
-          {formatKstDateTime(post.updatedAt)}
-          {post.updatedAt !== post.createdAt && ' (수정됨)'}
-        </time>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="min-w-0 flex-1">{post.title}</h1>
+          <p className="shrink-0 text-right text-xs text-muted-foreground">
+            <span>{authorName}</span>
+            <span className="mx-1.5 text-border" aria-hidden>
+              ·
+            </span>
+            <time dateTime={post.updatedAt} className="tabular-nums">
+              {formatKstDateTime(post.updatedAt)}
+              {post.updatedAt !== post.createdAt && ' (수정됨)'}
+            </time>
+          </p>
+        </div>
       </header>
 
-      {isOwner && (
+      {canManage && (
         <div className="mt-4 flex gap-2">
           <Button
             size="sm"
@@ -69,6 +78,8 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
       <Separator className="my-8" />
 
       <MarkdownBody content={post.content} />
+
+      <BoardCommentsSection postId={post.id} userId={userId} />
     </article>
   )
 }

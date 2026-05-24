@@ -2,18 +2,21 @@ import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { LabFormGate } from '@/components/lab/LabFormGate'
-import { LabTimeline } from '@/components/lab/LabTimeline'
 import { SparkDetail } from '@/components/spark/SparkDetail'
 import { SparkDetailLayout } from '@/components/spark/SparkDetailLayout'
 import { SparkPrivateNotice } from '@/components/spark/SparkPrivateNotice'
 import { Button } from '@/components/ui/button'
-import { getUserDisplayName } from '@/lib/auth'
+import { getDisplayNamesByUserIds, getUserDisplayName } from '@/lib/auth'
+import { SparkDeleteButton } from '@/components/spark/SparkDeleteButton'
 import {
+  canDeleteSpark,
   canEditSpark,
   canViewSparkBody,
-  getSparkRouteLabel,
 } from '@/lib/spark-permissions'
+import { isAdmin } from '@/lib/user-role'
 import { listLabLogsBySparkId } from '@/lib/labs'
+import { getFuelSettings } from '@/lib/fuel-settings'
+import { countSparkCheers } from '@/lib/spark-fuel'
 import { getSparkById } from '@/lib/sparks'
 import { resolveSparkPath } from '@/lib/routes'
 import { headers } from 'next/headers'
@@ -42,16 +45,42 @@ export default async function SparkDetailPage({ params }: SparkDetailPageProps) 
   if (!spark) notFound()
 
   const { userId } = await auth()
+  const viewerIsAdmin = userId ? await isAdmin(userId) : false
   const authorName = await getUserDisplayName(spark.authorId)
-  const showBody = canViewSparkBody(userId, spark)
-  const sparkRouteLabel = getSparkRouteLabel(userId, spark)
-  const isOwner = canEditSpark(userId, spark)
+  const showBody = canViewSparkBody(userId, spark, { viewerIsAdmin })
+  const canEdit = userId ? await canEditSpark(userId, spark) : false
+  const canDelete = userId ? await canDeleteSpark(userId) : false
   const canWriteLab =
     !!userId && (spark.mode === 'open' || spark.authorId === userId)
   const editPath = resolveSparkPath(`/${spark.id}/edit`, host)
+  const listPath = resolveSparkPath('/', host)
+
+  const doerIds = Array.from(
+    new Set([spark.authorId, ...logs.map((log) => log.doerId)]),
+  )
+  const [doerNames, fuelSettings, cheerCount] = await Promise.all([
+    getDisplayNamesByUserIds(doerIds),
+    getFuelSettings(),
+    countSparkCheers(spark.id),
+  ])
 
   return (
-    <SparkDetailLayout spark={spark} sparkRouteLabel={sparkRouteLabel} logs={logs}>
+    <SparkDetailLayout
+      spark={spark}
+      logs={logs}
+      doerNames={doerNames}
+      cheerCount={cheerCount}
+      maxCheerPerUserPerSparkDay={fuelSettings.maxCheerPerUserPerSparkDay}
+      isSignedIn={!!userId}
+      sparkBodyHidden={!showBody}
+      labForm={
+        <LabFormGate
+          sparkId={spark.id}
+          canWrite={canWriteLab}
+          isSignedIn={!!userId}
+        />
+      }
+    >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <Button
           variant="ghost"
@@ -61,24 +90,22 @@ export default async function SparkDetailPage({ params }: SparkDetailPageProps) 
         >
           ← Spark 목록
         </Button>
-        {isOwner && (
-          <Button size="sm" variant="outline" render={<Link href={editPath} />}>
-            Spark 수정
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {canEdit && (
+            <Button size="sm" variant="outline" render={<Link href={editPath} />}>
+              Spark 수정
+            </Button>
+          )}
+          {canDelete && (
+            <SparkDeleteButton sparkId={spark.id} listPath={listPath} />
+          )}
+        </div>
       </div>
       {showBody ? (
         <SparkDetail spark={spark} authorName={authorName} />
       ) : (
-        <SparkPrivateNotice />
+        <SparkPrivateNotice title={spark.title} />
       )}
-      {/* 비공개 Spark도 Lab 기록은 참여자·방문자 모두 열람 가능 */}
-      <LabTimeline logs={logs} sparkBodyHidden={!showBody} />
-      <LabFormGate
-        sparkId={spark.id}
-        canWrite={canWriteLab}
-        isSignedIn={!!userId}
-      />
     </SparkDetailLayout>
   )
 }

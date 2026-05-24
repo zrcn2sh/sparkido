@@ -17,3 +17,4 @@ migrations_dir = "migrations"
 [vars]
 NEXT_PUBLIC_WWW_URL = "https://www.idosquare.co.kr"
 NEXT_PUBLIC_SPARK_URL = "https://spark.idosquare.co.kr"
+NEXT_PUBLIC_SHOW_URL = "https://show.idosquare.co.kr"

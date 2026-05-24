@@ -1,6 +1,8 @@
 'use client'
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
+import { AppUserMenu } from '@/components/auth/AppUserMenu'
+import { UserFuelBadge } from '@/components/fuel/UserFuelBadge'
 
 const authLinkClass =
   'text-sm text-muted-foreground transition-colors hover:text-foreground'
@@ -24,13 +26,10 @@ export function TopNavAuth() {
         </SignInButton>
       </SignedOut>
       <SignedIn>
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: 'h-7 w-7',
-            },
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <UserFuelBadge />
+          <AppUserMenu />
+        </div>
       </SignedIn>
     </>
   )

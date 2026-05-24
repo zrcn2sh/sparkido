@@ -10,8 +10,11 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <SignUp />
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 py-12">
+      <p className="max-w-sm text-center text-sm text-muted-foreground">
+        계정 생성 후 별명을 등록하면 Spark·Lab·게시판에 표시됩니다.
+      </p>
+      <SignUp forceRedirectUrl="/" fallbackRedirectUrl="/" />
     </div>
   )
 }

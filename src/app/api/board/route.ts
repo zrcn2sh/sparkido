@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import { jsonError, jsonUnauthorized } from '@/lib/api'
+import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'
+import { canCreateBoardPost } from '@/lib/board-permissions'
 import { isBoardCategory } from '@/lib/board-categories'
 import { createBoardPost, listBoardPosts } from '@/lib/board'
 import type { CreateBoardPostInput } from '@/lib/board'
@@ -43,6 +44,10 @@ export async function POST(request: Request) {
     }
     if (!body.content?.trim()) {
       return jsonError('내용을 입력해 주세요.')
+    }
+
+    if (!(await canCreateBoardPost(userId, body.category))) {
+      return jsonForbidden('공지사항은 관리자만 작성할 수 있습니다.')
     }
 
     const post = await createBoardPost(

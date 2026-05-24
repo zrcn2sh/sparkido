@@ -1,4 +1,6 @@
 import { nowKstIso } from '@/lib/datetime'
+import { getFuelSettings } from '@/lib/fuel-settings'
+import { addUserFuel } from '@/lib/user-fuel'
 import { createId } from '@/lib/id'
 import { getDb } from '@/lib/db'
 import { assertValidUtf8Text } from '@/lib/text'
@@ -13,6 +15,7 @@ import type { LabLog, SparkStage } from '@/types'
 type LabLogRow = {
   id: string
   lab_id: string
+  doer_id: string
   step_number: number
   stage: string
   type: string
@@ -36,6 +39,7 @@ function mapLogRow(row: LabLogRow): LabLog {
   return {
     id: row.id,
     labId: row.lab_id,
+    doerId: row.doer_id,
     stepNumber: row.step_number,
     stage: normalizeSparkStage(row.stage),
     content: row.content,
@@ -106,13 +110,48 @@ export async function sparkHasOtherContributorLabs(
   return !!row
 }
 
+/** Spark별 참여자 수 — 작성자 + Lab doer (중복 제거) */
+export async function countLabParticipantsBySparkIds(
+  sparkIds: string[],
+): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {}
+  if (sparkIds.length === 0) return counts
+
+  for (const id of sparkIds) counts[id] = 1
+
+  const db = await getDb()
+  const placeholders = sparkIds.map(() => '?').join(', ')
+  const binds = [...sparkIds, ...sparkIds]
+  const { results } = await db
+    .prepare(
+      `SELECT spark_id, COUNT(DISTINCT participant_id) AS cnt
+       FROM (
+         SELECT id AS spark_id, author_id AS participant_id
+         FROM sparks
+         WHERE id IN (${placeholders})
+         UNION
+         SELECT spark_id, doer_id AS participant_id
+         FROM labs
+         WHERE spark_id IN (${placeholders})
+       ) AS participants
+       GROUP BY spark_id`,
+    )
+    .bind(...binds)
+    .all<{ spark_id: string; cnt: number }>()
+
+  for (const row of results ?? []) {
+    counts[row.spark_id] = row.cnt
+  }
+  return counts
+}
+
 export async function listLabLogsBySparkId(
   sparkId: string,
 ): Promise<LabLog[]> {
   const db = await getDb()
   const { results } = await db
     .prepare(
-      `SELECT ll.id, ll.lab_id, ll.step_number, ll.stage, ll.type, ll.content,
+      `SELECT ll.id, ll.lab_id, l.doer_id, ll.step_number, ll.stage, ll.type, ll.content,
               ll.tech_stack, ll.source_url, ll.prompt_text, ll.code_snippet, ll.created_at
        FROM lab_logs ll
        INNER JOIN labs l ON l.id = ll.lab_id
@@ -174,10 +213,23 @@ export async function createLabLog(
 
   await syncSparkStageFromLab(sparkId, input.stage)
 
+  const fuelSettings = await getFuelSettings()
+  const labFuel = fuelSettings.fuelLabCreate
+  if (labFuel > 0) {
+    await addUserFuel(doerId, labFuel, {
+      kind: 'earn_lab',
+      refType: 'lab_log',
+      refId: id,
+    })
+  }
+
   const row = await db
     .prepare(
-      `SELECT id, lab_id, step_number, stage, type, content, tech_stack, source_url, prompt_text, code_snippet, created_at
-       FROM lab_logs WHERE id = ?`,
+      `SELECT ll.id, ll.lab_id, l.doer_id, ll.step_number, ll.stage, ll.type, ll.content,
+              ll.tech_stack, ll.source_url, ll.prompt_text, ll.code_snippet, ll.created_at
+       FROM lab_logs ll
+       INNER JOIN labs l ON l.id = ll.lab_id
+       WHERE ll.id = ?`,
     )
     .bind(id)
     .first<LabLogRow>()

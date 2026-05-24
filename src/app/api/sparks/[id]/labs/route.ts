@@ -56,7 +56,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     if (!body.stage || !isSparkStage(body.stage)) {
-      return jsonError('작업 단계(Idea/Validate/Build/Live)를 선택해 주세요.')
+      return jsonError('작업 단계(Idea/Build/Live)를 선택해 주세요.')
     }
     if (!body.content?.trim()) {
       return jsonError('Lab 내용을 입력해 주세요.')
@@ -83,9 +83,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ log }, { status: 201 })
   } catch (error) {
     console.error('[POST /api/sparks/[id]/labs]', error)
-    return NextResponse.json(
-      { error: 'Lab 기록 등록에 실패했습니다.' },
-      { status: 500 },
-    )
+    const message =
+      error instanceof Error ? error.message : 'Lab 기록 등록에 실패했습니다.'
+    const status = message.includes('찾을 수 없') ? 404 : 400
+    return NextResponse.json({ error: message }, { status })
   }
 }

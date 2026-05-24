@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { BoardPostForm } from '@/components/board/BoardPostForm'
 import { Button } from '@/components/ui/button'
+import { canManageBoardPost } from '@/lib/board-permissions'
 import { getBoardPostById } from '@/lib/board'
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +22,7 @@ export default async function BoardEditPage({ params }: BoardEditPageProps) {
 
   const post = await getBoardPostById(params.id)
   if (!post) notFound()
-  if (post.authorId !== userId) {
+  if (!(await canManageBoardPost(userId, post))) {
     redirect(`/board/${params.id}`)
   }
 

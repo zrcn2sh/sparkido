@@ -1,6 +1,7 @@
 import { nowKstIso } from '@/lib/datetime'
 import { normalizeSparkStage } from '@/lib/spark-stages'
-import { canSetSparkMode } from '@/lib/spark-permissions'
+import { canEditSpark, canSetSparkMode } from '@/lib/spark-permissions'
+import { isAdmin } from '@/lib/user-role'
 import { createId } from '@/lib/id'
 import { getDb } from '@/lib/db'
 import {
@@ -10,6 +11,8 @@ import {
   type UpdateSparkInput,
   type ValidatedUpdateSparkInput,
 } from '@/lib/spark-form'
+import { getFuelSettings } from '@/lib/fuel-settings'
+import { addUserFuel } from '@/lib/user-fuel'
 import { parseSparkContent } from '@/lib/spark-content'
 import { assertValidUtf8Text } from '@/lib/text'
 
@@ -31,12 +34,17 @@ type SparkRow = {
   title: string
   content: string
   stage: SparkStage
-  voltage: number
+  fuel: number
+  cheer_count?: number
   created_at: string
   updated_at: string
 }
 
-const SPARK_SELECT = `id, author_id, mode, visibility, title, content, stage, voltage, created_at, updated_at`
+const SPARK_SELECT = `id, author_id, mode, visibility, title, content, stage, fuel, created_at, updated_at`
+
+const SPARK_LIST_SELECT = `${SPARK_SELECT},
+  (SELECT COUNT(*) FROM fuels
+   WHERE target_id = sparks.id AND target_type = 'spark' AND energy_type = '응원하기') AS cheer_count`
 
 export type CreateSparkInput = {
   title: string
@@ -58,7 +66,8 @@ function mapRow(row: SparkRow): Spark {
     title: row.title,
     content: row.content,
     stage: normalizeSparkStage(row.stage),
-    voltage: row.voltage,
+    fuel: row.fuel,
+    cheerCount: row.cheer_count ?? 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -102,27 +111,13 @@ function buildTitle(title: string): string {
   )
 }
 
-export async function listSparks(viewerId?: string | null): Promise<Spark[]> {
+/** Spark 목록 — 공개·비공개 모두 포함 (표시는 sanitizeSparkForViewer로 마스킹) */
+export async function listSparks(): Promise<Spark[]> {
   const db = await getDb()
-
-  if (viewerId) {
-    const { results } = await db
-      .prepare(
-        `SELECT ${SPARK_SELECT}
-         FROM sparks
-         WHERE visibility = 'public' OR author_id = ?
-         ORDER BY created_at DESC`,
-      )
-      .bind(viewerId)
-      .all<SparkRow>()
-    return (results ?? []).map(mapRow)
-  }
-
   const { results } = await db
     .prepare(
-      `SELECT ${SPARK_SELECT}
+      `SELECT ${SPARK_LIST_SELECT}
        FROM sparks
-       WHERE visibility = 'public'
        ORDER BY created_at DESC`,
     )
     .all<SparkRow>()
@@ -150,18 +145,37 @@ export async function createSpark(
   }
 
   const db = await getDb()
+  const settings = await getFuelSettings()
   const id = createId()
   const title = buildTitle(validated.data.title)
   const content = buildContent(validated.data)
   const now = nowKstIso()
+  const userFuel = settings.fuelSparkCreate
 
   await db
     .prepare(
-      `INSERT INTO sparks (id, author_id, mode, visibility, title, content, stage, voltage, created_at, updated_at)
+      `INSERT INTO sparks (id, author_id, mode, visibility, title, content, stage, fuel, created_at, updated_at)
        VALUES (?, ?, ?, 'public', ?, ?, ?, 0, ?, ?)`,
     )
-    .bind(id, authorId, validated.data.mode, title, content, 'idea', now, now)
+    .bind(
+      id,
+      authorId,
+      validated.data.mode,
+      title,
+      content,
+      'idea',
+      now,
+      now,
+    )
     .run()
+
+  if (userFuel > 0) {
+    await addUserFuel(authorId, userFuel, {
+      kind: 'earn_spark',
+      refType: 'spark',
+      refId: id,
+    })
+  }
 
   return {
     id,
@@ -171,7 +185,8 @@ export async function createSpark(
     title,
     content,
     stage: 'idea',
-    voltage: 0,
+    fuel: 0,
+    cheerCount: 0,
     createdAt: now,
     updatedAt: now,
   }
@@ -179,19 +194,19 @@ export async function createSpark(
 
 export async function updateSpark(
   sparkId: string,
-  authorId: string,
+  editorId: string,
   input: ValidatedUpdateSparkInput,
 ): Promise<Spark> {
   const existing = await getSparkById(sparkId)
   if (!existing) {
     throw new Error('Spark를 찾을 수 없습니다.')
   }
-  if (existing.authorId !== authorId) {
-    throw new Error('Spark 작성자만 수정할 수 있습니다.')
+  if (!(await canEditSpark(editorId, existing))) {
+    throw new Error('Spark 수정 권한이 없습니다.')
   }
 
   if (input.mode !== undefined) {
-    const modeCheck = await canSetSparkMode(existing, input.mode)
+    const modeCheck = await canSetSparkMode(existing, input.mode, editorId)
     if (!modeCheck.ok) {
       throw new Error(modeCheck.error)
     }
@@ -211,14 +226,40 @@ export async function updateSpark(
     .prepare(
       `UPDATE sparks
        SET title = ?, content = ?, mode = ?, visibility = ?, updated_at = ?
-       WHERE id = ? AND author_id = ?`,
+       WHERE id = ?`,
     )
-    .bind(title, content, mode, visibility, now, sparkId, authorId)
+    .bind(title, content, mode, visibility, now, sparkId)
     .run()
 
   const updated = await getSparkById(sparkId)
   if (!updated) throw new Error('Spark 수정 후 조회에 실패했습니다.')
   return updated
+}
+
+export async function deleteSpark(sparkId: string, userId: string): Promise<void> {
+  const existing = await getSparkById(sparkId)
+  if (!existing) {
+    throw new Error('Spark를 찾을 수 없습니다.')
+  }
+  if (!(await isAdmin(userId))) {
+    throw new Error('Spark 삭제 권한이 없습니다.')
+  }
+
+  const db = await getDb()
+  await db
+    .prepare(
+      `DELETE FROM lab_logs WHERE lab_id IN (SELECT id FROM labs WHERE spark_id = ?)`,
+    )
+    .bind(sparkId)
+    .run()
+  await db.prepare(`DELETE FROM labs WHERE spark_id = ?`).bind(sparkId).run()
+  await db
+    .prepare(
+      `DELETE FROM fuels WHERE target_id = ? AND target_type = 'spark'`,
+    )
+    .bind(sparkId)
+    .run()
+  await db.prepare(`DELETE FROM sparks WHERE id = ?`).bind(sparkId).run()
 }
 
 export function applySparkUpdateInput(

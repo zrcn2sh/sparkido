@@ -10,12 +10,15 @@ const SPARK_MODE_ICONS = {
 
 type SparkModeLabelProps = {
   mode: SparkMode
+  /** Open Do 목록 — Lab 참여자 수 */
+  participantCount?: number
   className?: string
   iconClassName?: string
 }
 
 export function SparkModeLabel({
   mode,
+  participantCount,
   className,
   iconClassName,
 }: SparkModeLabelProps) {
@@ -27,6 +30,14 @@ export function SparkModeLabel({
         aria-hidden
       />
       {SPARK_MODE_LABELS[mode]}
+      {mode === 'open' && participantCount !== undefined && (
+        <span
+          className="font-mono text-[0.95em] font-semibold tabular-nums text-foreground"
+          title="Lab 참여자 수"
+        >
+          {participantCount}
+        </span>
+      )}
     </span>
   )
 }

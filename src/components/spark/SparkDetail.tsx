@@ -1,4 +1,4 @@
-import { MarkdownBody } from '@/components/markdown/MarkdownBody'
+import { SparkNotesCollapsible } from '@/components/spark/SparkNotesCollapsible'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -80,12 +80,7 @@ export function SparkDetail({ spark, authorName }: SparkDetailProps) {
         {content.notes?.trim() && (
           <>
             <Separator />
-            <section>
-              <h3 className="text-sm text-muted-foreground">
-                더 하고 싶은 말
-              </h3>
-              <MarkdownBody content={content.notes} className="mt-2" />
-            </section>
+            <SparkNotesCollapsible content={content.notes} />
           </>
         )}
       </CardContent>

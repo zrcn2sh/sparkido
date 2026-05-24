@@ -1,7 +1,7 @@
 /** 한국 표준시(KST, UTC+9) — DB 저장·화면 표시 공통 */
 export const KST_TIMEZONE = 'Asia/Seoul'
 
-const KST_OFFSET = '+09:00'
+export const KST_OFFSET = '+09:00'
 
 type KstParts = {
   year: string
@@ -99,4 +99,33 @@ export function formatKstDateTime(iso: string): string {
     minute: '2-digit',
     hourCycle: 'h23',
   })
+}
+
+/** KST 달력 기준 연·월·일 (month 1–12) */
+export function getKstYmd(at: Date = new Date()): {
+  year: number
+  month: number
+  day: number
+} {
+  const p = kstPartsFromDate(at)
+  return {
+    year: Number(p.year),
+    month: Number(p.month),
+    day: Number(p.day),
+  }
+}
+
+/** KST 달력과 동일한 그레고리력 월 일수 (month 1–12) */
+export function getDaysInMonthKst(year: number, month: number): number {
+  return new Date(year, month, 0).getDate()
+}
+
+/**
+ * Show Fuel — 당월 잔여 일수 (등록 당일 포함, KST)
+ * 예: 5월 11일 → 5/11~5/31 = 21일
+ */
+export function getShowRemainingDaysInMonthKst(at: Date = new Date()): number {
+  const { year, month, day } = getKstYmd(at)
+  const daysInMonth = getDaysInMonthKst(year, month)
+  return Math.max(1, daysInMonth - day + 1)
 }

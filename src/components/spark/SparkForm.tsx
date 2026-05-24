@@ -13,6 +13,7 @@ import {
   SPARK_FIELD_LIMITS,
   SPARK_FORM_PLACEHOLDERS,
 } from '@/lib/spark-form'
+import { dispatchUserFuelChanged } from '@/lib/user-fuel-events'
 
 function useFieldLength(initial = '') {
   const [length, setLength] = useState(initial.length)
@@ -66,6 +67,7 @@ export function SparkForm() {
         setError(data.error ?? '등록에 실패했습니다.')
         return
       }
+      dispatchUserFuelChanged()
       const detailPath = pathname.startsWith('/spark')
         ? `/spark/${data.spark!.id}`
         : `/${data.spark!.id}`

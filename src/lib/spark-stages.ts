@@ -5,41 +5,38 @@ export type SparkStageMeta = {
   label: string
   shortLabel: string
   icon: string
+  /** Lab 등록 폼 단계 선택 안내 */
+  labExample: string
   badgeClass: string
   routeRing: string
 }
 
-/** 순서 없음 — Lab 등록 시 선택하는 작업 단계 */
+/** 3단계 — Idea · Build · Live */
 export const SPARK_STAGES: SparkStageMeta[] = [
   {
     id: 'idea',
     label: 'Idea',
     shortLabel: '아이디어',
     icon: '💡',
+    labExample: '문제 정의, 가설·방향 정리',
     badgeClass: 'border-gray-400/30 bg-gray-50 text-gray-800',
     routeRing: 'border-gray-400 bg-gray-50',
   },
   {
-    id: 'validate',
-    label: 'Validate',
-    shortLabel: '검증 중',
-    icon: '🔍',
-    badgeClass: 'border-amber-400/30 bg-amber-50 text-amber-800',
-    routeRing: 'border-amber-400 bg-amber-50',
-  },
-  {
     id: 'build',
     label: 'Build',
-    shortLabel: '개발 중',
+    shortLabel: '만들기',
     icon: '⛏️',
+    labExample: '프로토타입·기능 개발, API 연동',
     badgeClass: 'border-blue-400/30 bg-blue-50 text-blue-800',
     routeRing: 'border-blue-400 bg-blue-50',
   },
   {
     id: 'live',
     label: 'Live',
-    shortLabel: '출시·운영',
+    shortLabel: '출시',
     icon: '🚀',
+    labExample: '배포·공개, 사용자 피드백',
     badgeClass: 'border-teal-400/30 bg-teal-50 text-teal-800',
     routeRing: 'border-teal-400 bg-teal-50',
   },
@@ -48,7 +45,8 @@ export const SPARK_STAGES: SparkStageMeta[] = [
 const STAGE_IDS = new Set(SPARK_STAGES.map((s) => s.id))
 
 const LEGACY_STAGE: Record<string, SparkStage> = {
-  validating: 'validate',
+  validate: 'build',
+  validating: 'build',
   building: 'build',
   launched: 'live',
 }

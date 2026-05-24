@@ -1,6 +1,7 @@
 import { nowKstIso } from '@/lib/datetime'
 import { createId } from '@/lib/id'
 import { getDb } from '@/lib/db'
+import { deleteBoardCommentsByPostId } from '@/lib/board-comments'
 import { assertValidUtf8Text } from '@/lib/text'
 import type { BoardCategory, BoardPost } from '@/types'
 
@@ -133,6 +134,7 @@ export async function updateBoardPost(
 }
 
 export async function deleteBoardPost(id: string): Promise<boolean> {
+  await deleteBoardCommentsByPostId(id)
   const db = await getDb()
   const result = await db
     .prepare(`DELETE FROM board_posts WHERE id = ?`)

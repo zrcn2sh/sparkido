@@ -11,7 +11,6 @@ type SparkStagePickerProps = {
   disabled?: boolean
 }
 
-/** 순서 없음 — Lab 등록 시 이번 작업의 단계 */
 export function SparkStagePicker({
   value,
   onChange,
@@ -19,25 +18,19 @@ export function SparkStagePicker({
   disabled,
 }: SparkStagePickerProps) {
   return (
-    <fieldset className="space-y-2" disabled={disabled}>
-      <legend className="text-sm font-medium leading-none">
-        작업 단계 *
-      </legend>
-      <p className="text-xs text-muted-foreground">
-        이번 Lab에서 한 일에 가장 가까운 단계를 고르세요. 순서는 정해져 있지
-        않습니다.
-      </p>
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+    <fieldset className="w-full min-w-0 space-y-2 border-0 p-0" disabled={disabled}>
+      <legend className="text-sm font-medium leading-none">단계 *</legend>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         {SPARK_STAGES.map((stage) => {
           const selected = value === stage.id
           return (
             <label
               key={stage.id}
               className={cn(
-                'flex cursor-pointer items-center gap-1.5 rounded-md border-hairline border px-2 py-1.5 transition-colors',
+                'flex cursor-pointer flex-col gap-1 rounded-lg border px-3 py-2.5 transition-colors',
                 selected
-                  ? stage.routeRing
-                  : 'border-border hover:border-primary/30',
+                  ? cn(stage.routeRing, 'ring-1 ring-primary/20')
+                  : 'border-border bg-card hover:border-primary/30',
                 disabled && 'cursor-not-allowed opacity-60',
               )}
             >
@@ -49,15 +42,20 @@ export function SparkStagePicker({
                 onChange={() => onChange(stage.id)}
                 className="sr-only"
               />
-              <span className="shrink-0 text-base leading-none" aria-hidden>
-                {stage.icon}
-              </span>
-              <span className="min-w-0 text-left text-[11px] leading-tight">
-                <span className="font-medium">{stage.label}</span>
-                <span className="text-muted-foreground">
-                  {' '}
-                  / {stage.shortLabel}
+              <span className="inline-flex items-center gap-2">
+                <span className="text-xl leading-none" aria-hidden>
+                  {stage.icon}
                 </span>
+                <span className="text-sm font-semibold leading-none">
+                  {stage.label}
+                  <span className="font-normal text-muted-foreground">
+                    {' '}
+                    · {stage.shortLabel}
+                  </span>
+                </span>
+              </span>
+              <span className="text-xs leading-tight text-muted-foreground">
+                예) {stage.labExample}
               </span>
             </label>
           )

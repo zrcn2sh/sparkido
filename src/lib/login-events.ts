@@ -9,6 +9,7 @@ export type RecordLoginEventInput = {
   signedInAt?: string | null
   signedOutAt?: string | null
   ipAddress?: string | null
+  browser?: string | null
   userAgent?: string | null
   city?: string | null
   country?: string | null
@@ -23,8 +24,8 @@ export async function recordLoginEvent(
     .prepare(
       `INSERT OR IGNORE INTO login_events (
          id, clerk_event_id, clerk_user_id, clerk_session_id, event_type,
-         signed_in_at, signed_out_at, ip_address, user_agent, city, country
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         signed_in_at, signed_out_at, ip_address, browser, user_agent, city, country
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       createId(),
@@ -35,6 +36,7 @@ export async function recordLoginEvent(
       input.signedInAt ?? null,
       input.signedOutAt ?? null,
       input.ipAddress ?? null,
+      input.browser ?? null,
       input.userAgent ?? null,
       input.city ?? null,
       input.country ?? null,
@@ -55,6 +57,7 @@ export type LoginEvent = {
   signedInAt: string | null
   signedOutAt: string | null
   ipAddress: string | null
+  browser: string | null
   userAgent: string | null
   city: string | null
   country: string | null
@@ -70,6 +73,7 @@ type LoginEventRow = {
   signed_in_at: string | null
   signed_out_at: string | null
   ip_address: string | null
+  browser: string | null
   user_agent: string | null
   city: string | null
   country: string | null
@@ -86,6 +90,7 @@ function mapRow(row: LoginEventRow): LoginEvent {
     signedInAt: row.signed_in_at,
     signedOutAt: row.signed_out_at,
     ipAddress: row.ip_address,
+    browser: row.browser,
     userAgent: row.user_agent,
     city: row.city,
     country: row.country,
@@ -101,7 +106,7 @@ export async function listLoginEventsByUserId(
   const { results } = await db
     .prepare(
       `SELECT id, clerk_event_id, clerk_user_id, clerk_session_id, event_type,
-              signed_in_at, signed_out_at, ip_address, user_agent, city, country, created_at
+              signed_in_at, signed_out_at, ip_address, browser, user_agent, city, country, created_at
        FROM login_events
        WHERE clerk_user_id = ?
        ORDER BY COALESCE(signed_in_at, signed_out_at, created_at) DESC

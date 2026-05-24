@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { BoardPostForm } from '@/components/board/BoardPostForm'
 import { Button } from '@/components/ui/button'
 import { getBoardCategoryMeta } from '@/lib/board-categories'
+import { canCreateBoardPost } from '@/lib/board-permissions'
 
 export default async function BoardNoticeNewPage() {
   const { userId } = await auth()
@@ -11,6 +12,10 @@ export default async function BoardNoticeNewPage() {
 
   if (!userId) {
     redirect(`/sign-in?redirect_url=${encodeURIComponent('/board/notice/new')}`)
+  }
+
+  if (!(await canCreateBoardPost(userId, 'notice'))) {
+    redirect('/board/notice')
   }
 
   return (

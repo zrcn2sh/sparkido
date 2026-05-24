@@ -2,9 +2,35 @@ import { assertValidUtf8Text } from '@/lib/text'
 
 const MAX_SOURCE_URL_LENGTH = 500
 
+export const LAB_SOURCE_URL_SCHEME_MESSAGE =
+  '링크는 http:// 또는 https://로 시작해야 합니다.'
+
+function assertLabSourceUrlScheme(trimmed: string): void {
+  const lower = trimmed.toLowerCase()
+  if (!lower.startsWith('http://') && !lower.startsWith('https://')) {
+    throw new Error(LAB_SOURCE_URL_SCHEME_MESSAGE)
+  }
+}
+
+/** 클라이언트 폼 검증용 — 오류 메시지 또는 null(유효·비어 있음) */
+export function getLabSourceUrlValidationError(
+  raw: string | undefined | null,
+): string | null {
+  const trimmed = raw?.trim()
+  if (!trimmed) return null
+  try {
+    parseLabSourceUrl(trimmed)
+    return null
+  } catch (err) {
+    return err instanceof Error ? err.message : '링크 형식이 올바르지 않습니다.'
+  }
+}
+
 export function parseLabSourceUrl(raw: string | undefined | null): string | null {
   const trimmed = raw?.trim()
   if (!trimmed) return null
+
+  assertLabSourceUrlScheme(trimmed)
 
   let url: URL
   try {
@@ -14,7 +40,7 @@ export function parseLabSourceUrl(raw: string | undefined | null): string | null
   }
 
   if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-    throw new Error('http 또는 https 링크만 등록할 수 있습니다.')
+    throw new Error(LAB_SOURCE_URL_SCHEME_MESSAGE)
   }
 
   const normalized = url.toString()
