@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { redirect } from 'next/navigation'
 import { buildSparkRedirectUrl } from '@/lib/routes'
 import { headers } from 'next/headers'

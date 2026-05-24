@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { AdminPageSection } from '@/components/admin/admin-layout'
 import { AdminFuelSettingsForm } from '@/components/admin/AdminFuelSettingsForm'
 

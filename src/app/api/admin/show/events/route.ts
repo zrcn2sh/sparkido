@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server'
 import { requireAdminUserId } from '@/lib/admin-auth'
 import {
@@ -5,8 +7,6 @@ import {
   type AdminShowTileEventsQuery,
 } from '@/lib/admin-show-tile-events'
 import type { ShowTileEventAction } from '@/lib/show-tile-events'
-
-export const runtime = 'nodejs'
 
 const ACTIONS: ShowTileEventAction[] = ['register', 'cancel', 'purge_all']
 

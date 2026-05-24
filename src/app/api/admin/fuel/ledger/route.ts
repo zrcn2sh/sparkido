@@ -1,8 +1,8 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server'
 import { requireAdminUserId } from '@/lib/admin-auth'
 import { searchAdminFuelLedger } from '@/lib/admin-fuel-ledger'
-
-export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
   try {

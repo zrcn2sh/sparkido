@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { AdminShowTileEventsPanel } from '@/components/admin/AdminShowTileEventsPanel'
 import { AdminPageSection } from '@/components/admin/admin-layout'
 import { todayKstDateString } from '@/lib/admin-fuel-ledger'

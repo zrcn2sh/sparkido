@@ -1,8 +1,8 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server'
 import { requireAdminUserId } from '@/lib/admin-auth'
 import { purgeAllShowTiles } from '@/lib/show-tiles'
-
-export const runtime = 'nodejs'
 
 /** 관리자: Show 활성 타일 전체 삭제 */
 export async function DELETE() {

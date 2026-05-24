@@ -1,11 +1,11 @@
+export const runtime = 'edge'
+
 import { getKstYmd, nowKstIso } from '@/lib/datetime'
 import { getDb } from '@/lib/db'
 import { purgeAllShowTiles } from '@/lib/show-tiles'
 import { NextResponse } from 'next/server'
 
 const DEV_PURGE_SECRET = 'dev-local-show-purge'
-
-export const runtime = 'nodejs'
 
 /** 매월 1일 0시(KST) Cron — Show 타일 전체 삭제 */
 export async function POST(req: Request) {

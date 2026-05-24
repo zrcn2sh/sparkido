@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { AdminShowPurgePanel } from '@/components/admin/AdminShowPurgePanel'
 import { AdminPageSection } from '@/components/admin/admin-layout'
 import { countActiveShowTiles } from '@/lib/show-tiles'

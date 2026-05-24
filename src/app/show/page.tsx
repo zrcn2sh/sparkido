@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { ShowMain } from '@/components/show/ShowMain'
 import { SparkPageShell } from '@/components/spark/SparkPageShell'
 import { listShowPages } from '@/lib/show-tiles'

@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { TopNav } from '@/components/common/TopNav'
 import type { Metadata } from 'next'
 

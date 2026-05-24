@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

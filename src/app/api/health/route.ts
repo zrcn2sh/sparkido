@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { nowKstIso } from '@/lib/datetime'
 import { NextResponse } from 'next/server'
 

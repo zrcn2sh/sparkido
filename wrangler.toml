@@ -1,6 +1,7 @@
 name = "ido"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
 
 # Cloudflare Pages + D1 (배포 시 database_id 설정)
 [[d1_databases]]

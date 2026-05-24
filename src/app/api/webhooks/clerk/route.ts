@@ -1,11 +1,11 @@
+export const runtime = 'edge'
+
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { handleClerkWebhookEvent } from '@/lib/clerk-webhook'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
 export async function POST(request: NextRequest) {
   try {
     const clerkEventId = request.headers.get('svix-id')

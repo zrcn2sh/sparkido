@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { PrivacyPolicyContent } from '@/components/www/PrivacyPolicyContent'
 import { InfoFooter } from '@/components/www/InfoFooter'
 import {

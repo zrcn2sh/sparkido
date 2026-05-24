@@ -1,10 +1,10 @@
+export const runtime = 'edge'
+
 import { earnLoginFuelForClerkSession } from '@/lib/fuel-auth-rewards'
 import { enrichLoginEventBrowserFromRequest } from '@/lib/login-event-enrich'
 import { NextResponse } from 'next/server'
 
 const DEV_ENRICH_SECRET = 'dev-local-enrich'
-
-export const runtime = 'nodejs'
 
 /** Edge middleware → Node: 로그인 이벤트 브라우저 보강 (D1) */
 export async function POST(req: Request) {
