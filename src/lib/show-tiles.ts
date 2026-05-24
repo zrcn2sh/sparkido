@@ -564,11 +564,17 @@ export async function createShowTilePlacements(
           image_url: imageUrl,
           icon_text: iconText,
           link_url: linkUrl,
+          fuel_ledger_id: ledgerId,
+          fuel_daily: dailyFuel,
+          fuel_period_charged: periodFuel,
+          fuel_billing_month: billingMonth,
+          fuel_remaining_days: remainingDays,
           status: 'active',
           created_at: now,
           updated_at: now,
         },
         names[ownerId] ?? '알 수 없음',
+        { triedCount: 0, recommendCount: 0 },
       )
     }
   }

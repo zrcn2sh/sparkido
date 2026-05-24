@@ -34,7 +34,7 @@ export async function enrichLoginEventBrowserFromClerkSession(
   try {
     const client = await clerkClient()
     const session = await client.sessions.getSession(clerkSessionId)
-    const raw = session as Record<string, unknown>
+    const raw = session as unknown as Record<string, unknown>
     const activity = raw.latest_activity ?? raw.latestActivity
     const browser = formatBrowserFromClerkActivity(activity)
     if (browser) {
@@ -65,7 +65,7 @@ export async function fetchBrowsersBySessionIds(
   sessionIds: string[],
 ): Promise<Map<string, string>> {
   const result = new Map<string, string>()
-  const unique = [...new Set(sessionIds.filter(Boolean))]
+  const unique = Array.from(new Set(sessionIds.filter(Boolean)))
   if (unique.length === 0) return result
 
   const client = await clerkClient()
@@ -78,7 +78,7 @@ export async function fetchBrowsersBySessionIds(
       }
       try {
         const session = await client.sessions.getSession(sessionId)
-        const raw = session as Record<string, unknown>
+        const raw = session as unknown as Record<string, unknown>
         const activity = raw.latest_activity ?? raw.latestActivity
         const browser = formatBrowserFromClerkActivity(activity)
         sessionBrowserCache.set(sessionId, browser)

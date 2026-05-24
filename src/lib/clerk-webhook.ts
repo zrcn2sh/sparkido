@@ -14,7 +14,7 @@ function sessionActivity(
   data: SessionWebhookEvent['data'],
   httpRequest: SessionWebhookEvent['event_attributes']['http_request'],
 ) {
-  const raw = data as Record<string, unknown>
+  const raw = data as unknown as Record<string, unknown>
   const activity = raw.latest_activity ?? raw.latestActivity
   const rawUserAgent =
     httpRequest.user_agent ??
