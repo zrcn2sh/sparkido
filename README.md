@@ -109,11 +109,22 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 로컬: `npm run dev` · Workers 미리보기: `npm run preview` · 배포: `npm run deploy`
 
-1. Worker 프로젝트 **sparkido**에 D1 바인딩 (`DB`) 및 **Build variables**에 Clerk 등 env 설정
+1. Worker 프로젝트 **sparkido**에 D1 바인딩 (`DB`) 및 env 설정 (아래 Clerk 표 참고)
 2. `nodejs_compat` (Functions 호환 플래그)
 3. `npm run db:migrate:remote` (아래 D1 오류 참고)
-4. Clerk 프로덕션 도메인·Redirect URL (`*.workers.dev` 또는 커스텀 도메인)
-5. (선택) Clerk Webhook → `https://your-domain/api/webhooks/clerk`
+4. Clerk — **기존 Idosquare 앱 키 재사용** (새 Clerk 앱 불필요). **Build variables**에 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` 필수 (없으면 `useAuth` / ClerkProvider 오류)
+5. Clerk 프로덕션 도메인·Redirect URL (`*.workers.dev` 또는 커스텀 도메인)
+6. (선택) Clerk Webhook → `https://your-domain/api/webhooks/clerk`
+
+### Clerk env (Cloudflare Workers Builds)
+
+| 변수 | 어디에 | 비고 |
+|------|--------|------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | **Build variables** | 빌드 시 클라이언트에 박힘. Secret만 넣으면 안 됨 |
+| `CLERK_SECRET_KEY` | **Secrets** (런타임) | 미들웨어·API용 |
+| `CLERK_WEBHOOK_SIGNING_SECRET` 등 | **Secrets** | Webhook 사용 시 |
+
+값 변경 후 **반드시 재배포**(Build부터 다시).
 
 ### D1 API 오류가 날 때
 
