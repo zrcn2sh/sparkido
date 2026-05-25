@@ -3,7 +3,8 @@
 **Idosquare** — 1인 개발자를 위한 아이디어(Spark) 등록과 실행 기록(Lab) 커뮤니티.
 
 - **spark** · 메인 · Spark / Lab (`spark.idosquare.co.kr`, `www` 루트는 여기로 리다이렉트)
-- **www** · 회사 소개 `/info`, 게시판 `/board` (`www.idosquare.co.kr`)
+- **info** · 회사 소개 (`info.idosquare.co.kr`)
+- **www** · 게시판 `/board` (`www.idosquare.co.kr`)
 
 > 아이디어는 누구나 가질 수 있지만, 실행의 궤적은 당신만의 것입니다.
 
@@ -93,7 +94,7 @@ sparkido/
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk (클라이언트) |
 | `CLERK_SECRET_KEY` | Clerk (서버) |
 | `CLERK_WEBHOOK_SIGNING_SECRET` | 로그인 이력 Webhook (배포 후) |
-| `NEXT_PUBLIC_WWW_URL` / `NEXT_PUBLIC_SPARK_URL` | 서브도메인 URL |
+| `NEXT_PUBLIC_WWW_URL` / `NEXT_PUBLIC_INFO_URL` / `NEXT_PUBLIC_SPARK_URL` / `NEXT_PUBLIC_SHOW_URL` | 서브도메인 URL |
 | `D1_DATABASE_ID` 등 | Cloudflare (배포·원격 DB) |
 
 ## 배포 (Cloudflare Workers + OpenNext)

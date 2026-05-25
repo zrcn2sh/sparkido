@@ -13,6 +13,7 @@ import {
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/session-config'
 import {
+  buildCrossSubdomainRedirect,
   buildSparkRedirectUrl,
   resolveInternalPathname,
   shouldRedirectToSparkMain,
@@ -184,6 +185,16 @@ export default clerkMiddleware(async (auth, req) => {
         sessionResult.markLoginEnriched,
       )
     }
+  }
+
+  const crossHost = buildCrossSubdomainRedirect(pathname, host)
+  if (crossHost) {
+    return applySessionAnchorCookie(
+      NextResponse.redirect(crossHost),
+      sessionResult.setAnchor,
+      sessionResult.clearAnchor,
+      sessionResult.markLoginEnriched,
+    )
   }
 
   let res: NextResponse

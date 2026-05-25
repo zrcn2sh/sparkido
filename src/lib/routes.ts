@@ -11,19 +11,88 @@ export function isShowSubdomainHost(host: string) {
   return host.startsWith('show.')
 }
 
+export function isInfoSubdomainHost(host: string) {
+  return host.startsWith('info.')
+}
+
 export function isPathShowRoute(pathname: string) {
   return pathname === '/show' || pathname.startsWith('/show/')
+}
+
+export function isPathInfoRoute(pathname: string) {
+  return pathname === '/info' || pathname.startsWith('/info/')
 }
 
 export function isLocalDevHost(host: string) {
   return host.includes('localhost') || host.includes('127.0.0.1')
 }
 
-/** www 호스트(로컬 localhost 포함, spark·show 서브도메인 제외) */
+/** 단일 오리진에서 경로로 구분 (localhost, *.workers.dev) */
+export function isPathBasedNavigationHost(host: string) {
+  return (
+    (host && isLocalDevHost(host)) ||
+    (!host && isLocalEnv()) ||
+    host.endsWith('.workers.dev')
+  )
+}
+
+function infoPublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_INFO_URL ?? 'https://info.idosquare.co.kr'
+  ).replace(/\/$/, '')
+}
+
+/**
+ * 프로덕션: 잘못된 서브도메인+경로 조합 → 올바른 호스트로 이동
+ */
+export function buildCrossSubdomainRedirect(
+  pathname: string,
+  host: string,
+): string | null {
+  if (!host || isPathBasedNavigationHost(host)) return null
+
+  const www = (process.env.NEXT_PUBLIC_WWW_URL ?? '').replace(/\/$/, '')
+  const spark = (process.env.NEXT_PUBLIC_SPARK_URL ?? '').replace(/\/$/, '')
+  const show = (process.env.NEXT_PUBLIC_SHOW_URL ?? '').replace(/\/$/, '')
+  const info = infoPublicBase()
+  if (!www || !spark || !show || !info) return null
+
+  if (isPathInfoRoute(pathname) && !isInfoSubdomainHost(host)) {
+    const tail = pathname === '/info' ? '' : pathname.slice('/info'.length)
+    return `${info}${tail || '/'}`
+  }
+
+  if (
+    isWwwOnlyPath(pathname) &&
+    (isSparkSubdomainHost(host) || isShowSubdomainHost(host))
+  ) {
+    return `${www}${pathname}`
+  }
+
+  if (isPathShowRoute(pathname) && isWwwHost(host)) {
+    const tail = pathname === '/show' ? '' : pathname.slice('/show'.length)
+    return `${show}${tail || '/'}`
+  }
+
+  if (isPathSparkRoute(pathname) && isShowSubdomainHost(host)) {
+    const tail = pathname.slice('/spark'.length) || '/'
+    return `${spark}${tail}`
+  }
+
+  if (isPathShowRoute(pathname) && isSparkSubdomainHost(host)) {
+    const tail = pathname === '/show' ? '' : pathname.slice('/show'.length)
+    return `${show}${tail || '/'}`
+  }
+
+  return null
+}
+
+/** www 호스트(로컬 localhost 포함, spark·show·info 서브도메인 제외) */
 export function isWwwHost(host: string) {
   if (!host) return !isLocalEnv()
   if (isSparkSubdomainHost(host)) return false
   if (isShowSubdomainHost(host)) return false
+  if (isInfoSubdomainHost(host)) return false
   return true
 }
 
@@ -32,7 +101,7 @@ export function isPathSparkRoute(pathname: string) {
 }
 
 export function isWwwInfoPath(pathname: string) {
-  return pathname === '/info' || pathname.startsWith('/info/')
+  return isPathInfoRoute(pathname)
 }
 
 export function isWwwBoardPath(pathname: string) {
@@ -47,10 +116,9 @@ export function isWwwPrivacyPath(pathname: string) {
   return pathname === '/privacy' || pathname.startsWith('/privacy/')
 }
 
-/** www 전용 경로: 회사 소개·게시판·관리자·개인정보 */
+/** www 전용 경로: 게시판·관리자·개인정보 (Info는 info 서브도메인) */
 export function isWwwOnlyPath(pathname: string) {
   return (
-    isWwwInfoPath(pathname) ||
     isWwwBoardPath(pathname) ||
     isWwwAdminPath(pathname) ||
     isWwwPrivacyPath(pathname)
@@ -59,8 +127,6 @@ export function isWwwOnlyPath(pathname: string) {
 
 /**
  * www 루트 또는 /spark/* 접속 시 Spark 메인으로 보낼 URL
- * - 프로덕션 www → spark 서브도메인 절대 URL
- * - 로컬 → 동일 호스트 /spark
  */
 export function buildSparkRedirectUrl(pathname: string, host = ''): string {
   const sparkBase = (
@@ -73,14 +139,12 @@ export function buildSparkRedirectUrl(pathname: string, host = ''): string {
   }
 
   const onSparkSubdomain = host && isSparkSubdomainHost(host)
-  const local =
-    (host && isLocalDevHost(host)) || (!host && isLocalEnv())
 
   if (onSparkSubdomain) {
     return subpath
   }
 
-  if (local) {
+  if (isPathBasedNavigationHost(host)) {
     return subpath === '/' ? '/spark' : `/spark${subpath}`
   }
 
@@ -89,6 +153,11 @@ export function buildSparkRedirectUrl(pathname: string, host = ''): string {
 
 /** 미들웨어 rewrite: 공개 URL → app/www|spark|show 내부 경로 */
 export function resolveInternalPathname(pathname: string, host: string): string {
+  if (isInfoSubdomainHost(host)) {
+    if (pathname === '/') return '/www/info'
+    return `/www/info${pathname}`
+  }
+
   if (isShowSubdomainHost(host)) {
     if (pathname === '/') return '/show'
     return `/show${pathname}`
@@ -107,6 +176,10 @@ export function resolveInternalPathname(pathname: string, host: string): string 
     return pathname
   }
 
+  if (isPathInfoRoute(pathname)) {
+    return `/www${pathname}`
+  }
+
   if (isWwwOnlyPath(pathname)) {
     return `/www${pathname}`
   }
@@ -122,6 +195,7 @@ export function shouldRedirectToSparkMain(
 ): boolean {
   if (!isWwwHost(host)) return false
   if (isWwwOnlyPath(pathname)) return false
+  if (isPathInfoRoute(pathname)) return false
   if (isPathShowRoute(pathname)) return false
   if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
     return false
@@ -134,15 +208,10 @@ export function shouldRedirectToSparkMain(
     return false
   }
 
-  const local =
-    (host && isLocalDevHost(host)) || (!host && isLocalEnv())
-
-  // 로컬: /spark 는 경로 prefix — 리다이렉트하면 /spark ↔ /spark 무한 루프
-  if (local) {
+  if (isPathBasedNavigationHost(host)) {
     return pathname === '/'
   }
 
-  // 프로덕션 www: 루트·/spark/* → spark 서브도메인
   return pathname === '/' || isPathSparkRoute(pathname)
 }
 
@@ -158,7 +227,7 @@ export function resolveSparkPath(subpath = '', host = '') {
     return path || '/'
   }
 
-  if ((host && isLocalDevHost(host)) || (!host && isLocalEnv())) {
+  if (isPathBasedNavigationHost(host)) {
     if (!path) return '/spark'
     return `/spark${path}`
   }
@@ -169,8 +238,11 @@ export function resolveSparkPath(subpath = '', host = '') {
   return `${base}${path}`
 }
 
-/** www ↔ spark ↔ show 네비게이션용 */
-export function getAppUrl(subdomain: 'www' | 'spark' | 'show', host = '') {
+/** www ↔ spark ↔ show ↔ info 네비게이션용 */
+export function getAppUrl(
+  subdomain: 'www' | 'spark' | 'show' | 'info',
+  host = '',
+) {
   const www = (process.env.NEXT_PUBLIC_WWW_URL ?? 'http://localhost:3000').replace(
     /\/$/,
     '',
@@ -181,27 +253,38 @@ export function getAppUrl(subdomain: 'www' | 'spark' | 'show', host = '') {
   const show = (
     process.env.NEXT_PUBLIC_SHOW_URL ?? 'http://show.localhost:3000'
   ).replace(/\/$/, '')
+  const info = infoPublicBase()
 
-  const local =
-    (host && isLocalDevHost(host)) ||
-    (!host && isLocalEnv())
+  if (isPathBasedNavigationHost(host)) {
+    if (subdomain === 'info') return '/info'
+    if (subdomain === 'show') return '/show'
+    if (subdomain === 'spark') return '/spark'
+    return '/'
+  }
+
+  if (subdomain === 'info') {
+    if (host && isInfoSubdomainHost(host)) return '/'
+    return info
+  }
 
   if (subdomain === 'show') {
     if (host && isShowSubdomainHost(host)) return '/'
-    if (local) return '/show'
     return show
   }
 
   if (subdomain === 'spark') {
     if (host && isSparkSubdomainHost(host)) return '/'
-    if (local) return '/spark'
     return spark
   }
 
-  if (host && (isSparkSubdomainHost(host) || isShowSubdomainHost(host))) {
+  if (
+    host &&
+    (isSparkSubdomainHost(host) ||
+      isShowSubdomainHost(host) ||
+      isInfoSubdomainHost(host))
+  ) {
     return www
   }
-  if (local) return '/'
   return www
 }
 
@@ -216,7 +299,7 @@ export function resolveShowPath(subpath = '', host = '') {
     return path || '/'
   }
 
-  if ((host && isLocalDevHost(host)) || (!host && isLocalEnv())) {
+  if (isPathBasedNavigationHost(host)) {
     if (!path) return '/show'
     return `/show${path}`
   }
@@ -227,10 +310,9 @@ export function resolveShowPath(subpath = '', host = '') {
   return `${base}${path}`
 }
 
-/** 회사 소개(비전·미션) — www.idosquare.co.kr/info */
+/** 회사 소개 — info.idosquare.co.kr */
 export function getInfoUrl(host = '') {
-  const www = getAppUrl('www', host).replace(/\/$/, '')
-  const path = '/info'
-  if (!www || www === '/') return path
-  return `${www}${path}`
+  if (isPathBasedNavigationHost(host)) return '/info'
+  if (host && isInfoSubdomainHost(host)) return '/'
+  return infoPublicBase()
 }

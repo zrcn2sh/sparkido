@@ -10,6 +10,9 @@ const nextConfig = {
     'spark.localhost',
     'spark.localhost:3000',
     'spark.localhost:3001',
+    'info.localhost',
+    'info.localhost:3000',
+    'info.localhost:3001',
   ],
 }
 

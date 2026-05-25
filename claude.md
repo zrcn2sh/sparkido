@@ -1,7 +1,7 @@
 ## 프로젝트 개요
 
 - **서비스명**: Ido (Idea + Do)
-- **도메인**: `www.idosquare.co.kr` / `spark.idosquare.co.kr` / `show.idosquare.co.kr`
+- **도메인**: `www.idosquare.co.kr` / `info.idosquare.co.kr` / `spark.idosquare.co.kr` / `show.idosquare.co.kr`
 - **슬로건**: 아이디어는 누구나 가질 수 있지만, 실행의 궤적은 당신만의 것입니다
 - **목적**: 1인 개발자가 아이디어(Spark)를 등록하고 실행 과정(Lab)을 기록하는 커뮤니티 플랫폼
 
@@ -125,6 +125,12 @@ export function middleware(req: NextRequest) {
   if (host.startsWith('show.')) {
     return NextResponse.rewrite(
       new URL(`/show${pathname === '/' ? '' : pathname}`, req.url)
+    )
+  }
+
+  if (host.startsWith('info.')) {
+    return NextResponse.rewrite(
+      new URL(`/www/info${pathname === '/' ? '' : pathname}`, req.url)
     )
   }
 
@@ -416,6 +422,7 @@ R2_BUCKET_NAME=
 RESEND_API_KEY=
 NEXTAUTH_SECRET=
 NEXT_PUBLIC_WWW_URL=https://www.idosquare.co.kr
+NEXT_PUBLIC_INFO_URL=https://info.idosquare.co.kr
 NEXT_PUBLIC_SPARK_URL=https://spark.idosquare.co.kr
 NEXT_PUBLIC_SHOW_URL=https://show.idosquare.co.kr
 ```

@@ -197,12 +197,15 @@ export function ShowMain({ pages, host, loadError }: ShowMainProps) {
             </p>
           </div>
         ) : (
-          <Link
-            href="/sign-in"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-          >
-            로그인 후 등록
-          </Link>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            쇼케이스는 로그인 없이 볼 수 있습니다. 타일 등록만 로그인이 필요합니다.{' '}
+            <Link
+              href="/sign-in"
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              로그인
+            </Link>
+          </p>
         )}
       </div>
 
