@@ -250,10 +250,8 @@ export default clerkMiddleware(
       host,
       protocol,
     )
-    return {
-      authorizedParties: parties,
-      domain: host || undefined,
-    }
+    // domain 옵션은 satellite 전용 — 서브도메인마다 넣으면 403이 날 수 있음
+    return { authorizedParties: parties }
   },
 )
 

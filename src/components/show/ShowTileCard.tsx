@@ -5,9 +5,10 @@ import { cn } from '@/lib/utils'
 import type { ShowTile } from '@/types/show'
 import { ThumbsUp } from 'lucide-react'
 
+/** 이미지·아이콘 없을 때만 카테고리별 플레이스홀더 */
 const TILE_GRADIENT: Record<ShowTile['category'], string> = {
   web: 'from-teal-500/80 to-emerald-700/90',
-  app: 'from-sky-500/80 to-blue-700/90',
+  app: 'from-stone-400/70 to-stone-600/80',
   api_tool: 'from-violet-500/80 to-indigo-700/90',
   browser_extension: 'from-amber-500/80 to-orange-700/90',
   other: 'from-stone-500/70 to-stone-700/90',
@@ -37,6 +38,7 @@ export function ShowTileCard({
     ? Number(colSpan ?? 1) * Number(rowSpan ?? 1)
     : tile.width * tile.height
   const compact = cellCount <= 2
+  const hasTileVisual = Boolean(tile.imageUrl || tile.iconText)
 
   return (
     <button
@@ -44,8 +46,9 @@ export function ShowTileCard({
       onClick={onClick}
       className={cn(
         'group relative h-full w-full min-h-0 min-w-0 overflow-hidden rounded-sm border border-black/10 text-left shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
-        'bg-gradient-to-br',
-        TILE_GRADIENT[tile.category],
+        hasTileVisual
+          ? 'bg-background'
+          : cn('bg-gradient-to-br', TILE_GRADIENT[tile.category]),
         className,
       )}
       style={{

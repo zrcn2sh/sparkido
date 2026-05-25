@@ -129,6 +129,18 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 값 변경 후 **반드시 재배포**(Build부터 다시).
 
+### board.idosquare.co.kr — DNS_PROBE_FINISHED_NXDOMAIN
+
+코드 철자는 **`board.idosquare.co.kr`** 로 맞습니다. Chrome “오타” 안내는 **DNS에 `board` 호스트가 아예 없을 때** 나옵니다.
+
+| 확인 | 조치 |
+|------|------|
+| `nslookup board.idosquare.co.kr` 실패 | Cloudflare **Workers → sparkido → Domains** 에 Custom Domain **`board.idosquare.co.kr`** 추가 |
+| 기존 `www`용 CNAME만 있음 | `board`는 별도 Custom Domain (spark·show·info와 동일) |
+| 추가 후 | 1~5분 뒤 `https://board.idosquare.co.kr` 재접속 |
+
+`admin` / `show` / `info` 도 Custom Domain·Clerk allowlist에 각각 있어야 합니다.
+
 ### show / info 등에서 403 (Clerk)
 
 `GET https://show.idosquare.co.kr/ … 403` 이 **문서(메인) 요청**에서 나오면, 대부분 **Clerk 미들웨어가 해당 호스트를 허용 오리진으로 인식하지 못할 때** 발생합니다. (서버만 `curl`로 보면 200인데 브라우저만 403인 경우가 많습니다.)

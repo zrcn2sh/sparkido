@@ -49,12 +49,12 @@ function ShowGridSlot({
   onToggle?: () => void
 }) {
   const base =
-    'aspect-square w-full min-h-0 min-w-0 rounded-sm border border-border/70'
+    'aspect-square w-full min-h-0 min-w-0 rounded-sm border border-border/70 bg-background'
 
   if (occupied) {
     return (
       <div
-        className={cn(base, 'bg-muted')}
+        className={base}
         style={{ gridColumn: col + 1, gridRow: row + 1 }}
         aria-hidden
       />
@@ -71,7 +71,7 @@ function ShowGridSlot({
           'cursor-pointer transition-colors',
           selected
             ? 'border-primary bg-primary/20 ring-2 ring-primary/50'
-            : 'bg-muted hover:bg-muted/80',
+            : 'hover:bg-muted/40',
         )}
         style={{ gridColumn: col + 1, gridRow: row + 1 }}
         aria-label={`P${pageIndex + 1} ${col + 1}행 ${row + 1}열`}
@@ -82,7 +82,7 @@ function ShowGridSlot({
 
   return (
     <div
-      className={cn(base, 'bg-muted')}
+      className={base}
       style={{ gridColumn: col + 1, gridRow: row + 1 }}
       aria-hidden
     />

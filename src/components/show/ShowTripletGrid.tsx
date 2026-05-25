@@ -54,13 +54,13 @@ export function ShowTripletGrid({
         const gridRow = row + 1
 
         const base =
-          'aspect-square w-full min-h-0 min-w-0 rounded-sm border border-border/70'
+          'aspect-square w-full min-h-0 min-w-0 rounded-sm border border-border/70 bg-background'
 
         if (occupied) {
           slots.push(
             <div
               key={`slot-${page.pageIndex}-${col}-${row}`}
-              className={cn(base, 'bg-muted')}
+              className={base}
               style={{ gridColumn: gridCol, gridRow }}
               aria-hidden
             />,
@@ -84,7 +84,7 @@ export function ShowTripletGrid({
                 'cursor-pointer transition-colors',
                 selected
                   ? 'border-primary bg-primary/20 ring-2 ring-primary/50'
-                  : 'bg-muted hover:bg-muted/80',
+                  : 'hover:bg-muted/40',
               )}
               style={{ gridColumn: gridCol, gridRow }}
               aria-pressed={selected}
@@ -94,7 +94,7 @@ export function ShowTripletGrid({
           slots.push(
             <div
               key={`slot-${page.pageIndex}-${col}-${row}`}
-              className={cn(base, 'bg-muted')}
+              className={base}
               style={{ gridColumn: gridCol, gridRow }}
               aria-hidden
             />,
