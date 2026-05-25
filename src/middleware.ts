@@ -20,10 +20,6 @@ import {
   shouldRedirectToSparkMain,
 } from '@/lib/routes'
 import {
-  getClerkAuthorizedParties,
-  withRequestAuthorizedParty,
-} from '@/lib/clerk-origins'
-import {
   isSessionExpiredByAnchor,
   revokeSessionIfPresent,
 } from '@/lib/session-timeout'
@@ -166,8 +162,7 @@ function applySessionAnchorCookie(
   return res
 }
 
-export default clerkMiddleware(
-  async (auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   const host = req.headers.get('host') || ''
   const pathname = req.nextUrl.pathname
 
@@ -241,19 +236,7 @@ export default clerkMiddleware(
     sessionResult.clearAnchor,
     sessionResult.markLoginEnriched,
   )
-  },
-  (req) => {
-    const host = req.headers.get('host') ?? ''
-    const protocol = req.nextUrl.protocol.replace(':', '') || 'https'
-    const parties = withRequestAuthorizedParty(
-      getClerkAuthorizedParties(),
-      host,
-      protocol,
-    )
-    // domain 옵션은 satellite 전용 — 서브도메인마다 넣으면 403이 날 수 있음
-    return { authorizedParties: parties }
-  },
-)
+})
 
 export const config = {
   matcher: [

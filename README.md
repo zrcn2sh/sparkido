@@ -147,8 +147,9 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 **코드(이 저장소)** — 배포 후 반영됨:
 
-- `clerkMiddleware`에 **`authorizedParties`** + 요청 호스트 자동 포함
-- Clerk 핸드셰이크 경로 **`/__clerk/*`** 미들웨어 matcher 추가
+- 미들웨어에서 **`authorizedParties` 제거** (서브도메인 document 403 방지)
+- Clerk 핸드셰이크 **`/__clerk/*`** matcher 유지
+- `ClerkProvider`의 **`allowedRedirectOrigins`** 는 `NEXT_PUBLIC_*_URL` 기반 유지
 
 **Clerk Dashboard (프로덕션 `pk_live_…` 앱)**
 
