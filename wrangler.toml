@@ -4,6 +4,10 @@ main = ".open-next/worker.js"
 compatibility_date = "2025-05-20"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
+# OpenNext handler maps node:sqlite → require("sqlite"); Workers에는 npm 패키지 sqlite 없음
+[alias]
+sqlite = "./cloudflare-shims/sqlite.cjs"
+
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
