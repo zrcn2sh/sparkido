@@ -129,35 +129,34 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 값 변경 후 **반드시 재배포**(Build부터 다시).
 
-### show / info에서 403 (Clerk)
+### show / info 등에서 403 (Clerk)
 
-`spark`는 되는데 **`show.idosquare.co.kr` · `info.idosquare.co.kr`만 403**이면, HTML은 열리지만 브라우저가 Clerk Frontend API를 막는 경우가 많습니다. (개발자 도구 → Network에서 `clerk` / `frontend-api` 요청이 **403**인지 확인)
+`GET https://show.idosquare.co.kr/ … 403` 이 **문서(메인) 요청**에서 나오면, 대부분 **Clerk 미들웨어가 해당 호스트를 허용 오리진으로 인식하지 못할 때** 발생합니다. (서버만 `curl`로 보면 200인데 브라우저만 403인 경우가 많습니다.)
 
-**Clerk Dashboard (프로덕션 인스턴스, `pk_live_…` 키와 동일 앱)**
+**코드(이 저장소)** — 배포 후 반영됨:
 
-1. **Configure → Domains**
-   - Production **root domain**: `idosquare.co.kr` (또는 Clerk에 등록한 기본 도메인)
+- `clerkMiddleware`에 **`authorizedParties`** + 요청 호스트 자동 포함
+- Clerk 핸드셰이크 경로 **`/__clerk/*`** 미들웨어 matcher 추가
+
+**Clerk Dashboard (프로덕션 `pk_live_…` 앱)**
+
+1. **Configure → Domains** — Production root: `idosquare.co.kr`
 2. **Allowed Subdomains** ([문서](https://clerk.com/docs/guides/dashboard/dns-domains/subdomain-allowlist))
-   - **Enable allowed subdomains**가 켜져 있으면, 아래를 **모두** 추가해야 합니다.
-   - `www.idosquare.co.kr`
-   - `spark.idosquare.co.kr`
-   - `show.idosquare.co.kr`
-   - `info.idosquare.co.kr`
-   - (빠진 서브도메인만 FAPI 403)
-   - 또는 보안 요구가 낮으면 **Enable allowed subdomains 끄기** → 모든 서브도메인 허용
-3. **Paths / Redirect URLs** (메뉴명은 버전에 따라 다름)
-   - Sign-in·Sign-up 후 돌아올 URL에 각 호스트 허용, 예:
-   - `https://show.idosquare.co.kr/*`
-   - `https://info.idosquare.co.kr/*`
-   - `https://spark.idosquare.co.kr/*`
-   - `https://www.idosquare.co.kr/*`
-   - `https://board.idosquare.co.kr/*`
-   - `https://admin.idosquare.co.kr/*`
-4. **Cloudflare Workers Builds**
-   - Build variables에 `NEXT_PUBLIC_SHOW_URL`, `NEXT_PUBLIC_INFO_URL` 포함 (앱이 `allowedRedirectOrigins`에 반영)
-   - 변경 후 **재빌드·재배포**
+   - 켜져 있으면 **전부** 등록: `www`, `spark`, `show`, `info`, `board`, `admin` + `.idosquare.co.kr`
+   - 빠른 확인: **Enable allowed subdomains 끄기** → 403이 사라지면 allowlist 누락이 원인
+3. **Redirect URLs** — `https://show.idosquare.co.kr/*` 등 각 호스트 `/*` 추가
+4. **Cloudflare Workers Builds (Build variables)** — 아래 URL이 **빌드 시** 들어가야 함 (Secret만으로는 클라이언트에 안 박힘):
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `NEXT_PUBLIC_SHOW_URL=https://show.idosquare.co.kr`
+   - `NEXT_PUBLIC_INFO_URL`, `NEXT_PUBLIC_BOARD_URL`, `NEXT_PUBLIC_ADMIN_URL` 등
+   - 변경 후 **Build부터 재배포**
 
-앱은 show·info 페이지를 **비로그인 열람** 가능하게 두었습니다. 403이 **전체 페이지**(Cloudflare HTML)이면 Custom Domain·WAF를, **Clerk API만** 403이면 위 Dashboard 설정을 우선 확인하세요.
+**브라우저에서 확인**
+
+- Network → `show.idosquare.co.kr` **문서** 요청 Status
+- 같은 탭에서 `clerk` / `frontend-api` / `__clerk` 요청이 403인지 구분
+
+앱은 Show·Info를 **비로그인 열람** 가능하게 두었습니다. 문서가 403이면 Clerk·재배포를, Clerk API만 403이면 Dashboard allowlist를 우선 보세요.
 
 ### D1 API 오류가 날 때
 

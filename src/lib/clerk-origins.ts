@@ -17,7 +17,36 @@ export function getClerkAllowedOrigins(): string[] {
     process.env.NEXT_PUBLIC_ADMIN_URL,
   ]
 
-  return urls
+  const fromEnv = urls
     .map((u) => u?.trim().replace(/\/$/, ''))
     .filter((u): u is string => Boolean(u && /^https?:\/\//.test(u)))
+
+  const localDefaults = [
+    'http://localhost:3000',
+    'http://spark.localhost:3000',
+    'http://show.localhost:3000',
+    'http://info.localhost:3000',
+    'http://board.localhost:3000',
+    'http://admin.localhost:3000',
+    'http://www.localhost:3000',
+  ]
+
+  return [...new Set([...fromEnv, ...localDefaults])]
+}
+
+/** clerkMiddleware authorizedParties — 서브도메인 세션 검증 */
+export function getClerkAuthorizedParties(): string[] {
+  return getClerkAllowedOrigins()
+}
+
+/** 현재 요청 호스트를 authorizedParties에 포함 (env 누락 시 403 방지) */
+export function withRequestAuthorizedParty(
+  parties: string[],
+  host: string,
+  protocol = 'https',
+): string[] {
+  if (!host) return parties
+  const origin = `${protocol}://${host}`
+  if (parties.includes(origin)) return parties
+  return [...parties, origin]
 }

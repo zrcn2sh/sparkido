@@ -113,38 +113,44 @@ export function buildCrossSubdomainRedirect(
   const info = infoPublicBase()
   const board = boardPublicBase()
   const admin = adminPublicBase()
-  if (!www || !spark || !show || !info || !board || !admin) return null
 
   if (isPathInfoRoute(pathname) && !isInfoSubdomainHost(host)) {
+    if (!info) return null
     const tail = pathname === '/info' ? '' : pathname.slice('/info'.length)
     return `${info}${tail || '/'}`
   }
 
   if (isPathBoardRoute(pathname) && !isBoardSubdomainHost(host)) {
+    if (!board) return null
     const tail = boardPathTail(pathname)
     return `${board}${tail === '/' ? '' : tail}`
   }
 
   if (isPathAdminRoute(pathname) && !isAdminSubdomainHost(host)) {
+    if (!admin) return null
     const tail = adminPathTail(pathname)
     return `${admin}${tail === '/' ? '' : tail}`
   }
 
   if (isWwwPrivacyPath(pathname) && !isWwwHost(host)) {
+    if (!www) return null
     return `${www}${pathname}`
   }
 
   if (isPathShowRoute(pathname) && isWwwHost(host)) {
+    if (!show) return null
     const tail = pathname === '/show' ? '' : pathname.slice('/show'.length)
     return `${show}${tail || '/'}`
   }
 
   if (isPathSparkRoute(pathname) && isShowSubdomainHost(host)) {
+    if (!spark) return null
     const tail = pathname.slice('/spark'.length) || '/'
     return `${spark}${tail}`
   }
 
   if (isPathShowRoute(pathname) && isSparkSubdomainHost(host)) {
+    if (!show) return null
     const tail = pathname === '/show' ? '' : pathname.slice('/show'.length)
     return `${show}${tail || '/'}`
   }
