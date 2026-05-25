@@ -24,27 +24,19 @@ export type D1ExecResult = {
 
 let dbPromise: Promise<D1Database> | null = null
 
-import { getWranglerConfigPath } from '@/lib/wrangler-config'
-
-async function connectViaWrangler(): Promise<D1Database> {
-  const { getPlatformProxy } = await import('wrangler')
-  const { env } = await getPlatformProxy({
-    configPath: getWranglerConfigPath(),
-  })
-  const db = env.DB as D1Database | undefined
-  if (!db) {
-    throw new Error('D1 binding "DB" not found. wrangler.toml을 확인하세요.')
-  }
-  return db
-}
-
-/** Cloudflare Pages/Workers 또는 wrangler 로컬 D1 */
+/** Cloudflare D1 — Workers·next dev 모두 getCloudflareContext (wrangler CLI 번들 제외) */
 export async function getDb(): Promise<D1Database> {
   if (!dbPromise) {
     dbPromise = (async () => {
-      const env = process.env as { DB?: D1Database }
-      if (env.DB) return env.DB
-      return connectViaWrangler()
+      const { getCloudflareContext } = await import('@opennextjs/cloudflare')
+      const { env } = await getCloudflareContext({ async: true })
+      const db = env.DB
+      if (!db) {
+        throw new Error(
+          'D1 binding "DB" not found. wrangler.toml, Dashboard 바인딩, initOpenNextCloudflareForDev를 확인하세요.',
+        )
+      }
+      return db
     })()
   }
   return dbPromise

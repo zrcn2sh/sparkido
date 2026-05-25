@@ -103,7 +103,9 @@ Git **Create application** → `zrcn2sh/sparkido`
 | 항목 | 값 |
 |------|-----|
 | Build command | `npm run cf:build` |
-| Deploy command | `npm run deploy` 또는 `npx wrangler deploy` |
+| Deploy command | `npm run cf:deploy` (`--minify` 포함). CI에서 Build 후에는 **`npm run deploy` 대신 `cf:deploy`만** 실행해 이중 빌드 방지 |
+
+**Worker 크기:** `getDb()`에서 `wrangler` CLI를 직접 import하면 번들에 **wrangler+miniflare(~11MB)** 가 들어갑니다. `getCloudflareContext().env.DB`만 쓰면 gzip **약 1.5 MiB** (`--minify` 기준)로 **Workers Free(3 MiB)** 에도 배포 가능합니다. Deploy는 `npm run cf:deploy`(`--minify` 포함) 권장.
 
 로컬: `npm run dev` · Workers 미리보기: `npm run preview` · 배포: `npm run deploy`
 
