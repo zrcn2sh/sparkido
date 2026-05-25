@@ -1,6 +1,7 @@
 import { MarkdownBody } from '@/components/markdown/MarkdownBody'
 import { Badge } from '@/components/ui/badge'
 import { formatKstDateTime } from '@/lib/datetime'
+import { preserveUserLineBreaksForMarkdown } from '@/lib/markdown-line-breaks'
 import { formatLabSourceLinkLabel } from '@/lib/lab-links'
 import { getSparkStageMeta } from '@/lib/spark-stages'
 import type { LabLog } from '@/types'
@@ -45,7 +46,10 @@ export function LabItem({ log, doerName, sparkAuthorId }: LabItemProps) {
           {formatKstDateTime(log.createdAt)}
         </time>
       </div>
-      <MarkdownBody content={log.content} className="mt-2" />
+      <MarkdownBody
+        content={preserveUserLineBreaksForMarkdown(log.content)}
+        className="mt-2"
+      />
       {log.sourceUrl && (
         <p className="mt-2 text-sm">
           <a

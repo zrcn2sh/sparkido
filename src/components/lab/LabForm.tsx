@@ -103,7 +103,8 @@ export function LabForm({ sparkId }: LabFormProps) {
           <div className="space-y-2">
             <Label htmlFor="content">Lab 본문 *</Label>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              마크다운 형식으로 저장·표시됩니다.
+              Enter로 넣은 줄바꿈은 그대로 표시됩니다. 마크다운(# 제목, **굵게** 등)도
+              사용할 수 있습니다.
             </p>
             <Textarea id="content" name="content" required rows={4} />
           </div>
