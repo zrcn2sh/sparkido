@@ -58,6 +58,25 @@ export function getClerkAuthorizedParties(): string[] {
   return getClerkAllowedOrigins()
 }
 
+/**
+ * 서브도메인마다 /sign-in 상대 경로를 쓰면 Chrome에서 Clerk 핸드셰이크·403이 잦음.
+ * 프로덕션은 spark(또는 env) 한 곳으로 통일.
+ */
+export function getClerkSignInUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL?.trim()
+  if (fromEnv) return fromEnv
+  const spark = process.env.NEXT_PUBLIC_SPARK_URL?.trim().replace(/\/$/, '')
+  if (spark && /^https?:\/\//.test(spark)) return `${spark}/sign-in`
+  return '/sign-in'
+}
+
+export function getClerkSignUpUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL?.trim()
+  if (fromEnv) return fromEnv
+  const signIn = getClerkSignInUrl().replace(/\/sign-in\/?$/, '')
+  return `${signIn}/sign-up`
+}
+
 /** 현재 요청 호스트를 authorizedParties에 포함 (env 누락 시 403 방지) */
 export function withRequestAuthorizedParty(
   parties: string[],

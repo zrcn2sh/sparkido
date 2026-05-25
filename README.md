@@ -141,6 +141,28 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 `admin` / `show` / `info` 도 Custom Domain·Clerk allowlist에 각각 있어야 합니다.
 
+### 간헐적 403 (미들웨어·세션)
+
+- **info / show / board**: 공개 열람 — 커스텀 `sparkido_sess_anchor` 타임아웃 미적용 (`shouldEnforceCustomSessionTimeout`)
+- **admin**: 로그인·관리자 필수 — 앵커 타임아웃 **적용**
+- 만료 시 미들웨어에서 `revokeSession` 하지 않음 (Chrome 병렬 요청 race → Clerk 403 완화)
+- 앵커 쿠키 `domain=.idosquare.co.kr` (프로덕션) — 서브도메인 간 동일 앵커
+- Clerk `authorizedParties`에 요청 호스트 동적 포함
+
+### Chrome만 403 · Edge는 정상일 때
+
+연결(DNS·Worker)은 맞는데 **Chrome만** `403`이면, 설정 문제보다 **브라우저·Clerk 쿠키·캐시**인 경우가 많습니다.
+
+| 확인 | 조치 |
+|------|------|
+| 예전에 403이 났던 적 있음 | Chrome → `idosquare.co.kr` **사이트 데이터·쿠키 삭제** (디스크 캐시에 403이 남을 수 있음) |
+| 시크릿 창 | 확장 프로그램(광고 차단·프라이버시) 끄고 재시도 |
+| Application → Cookies | `__client` / `_client_uat` 가 **`.idosquare.co.kr`과 `idosquare.co.kr` 두 도메인**에 중복이면 Chrome만 핸드셰이크 실패 → 전부 삭제 후 재로그인 |
+| Network 탭 | **document** 403 vs **clerk.*** / **__clerk** 403 구분 (후자는 Dashboard allowlist) |
+| 로그인 URL | Build variables에 `NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://spark.idosquare.co.kr/sign-in` (서브도메인마다 상대 `/sign-in` 지양) |
+
+Edge는 서드파티 쿠키·캐시 정책이 덜 엄격해 같은 서버에서도 Chrome만 깨지는 일이 흔합니다. 최신 코드 배포 후에도 document 403이면 위 쿠키 정리를 먼저 해보세요.
+
 ### show / info 등에서 403 (Clerk)
 
 `GET https://show.idosquare.co.kr/ … 403` 이 **문서(메인) 요청**에서 나오면, 대부분 **Clerk 미들웨어가 해당 호스트를 허용 오리진으로 인식하지 못할 때** 발생합니다. (서버만 `curl`로 보면 200인데 브라우저만 403인 경우가 많습니다.)

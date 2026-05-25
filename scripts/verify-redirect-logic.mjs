@@ -96,4 +96,65 @@ if (sparkAdmin !== 'https://admin.idosquare.co.kr/members') {
   throw new Error(`spark /admin should redirect to admin subdomain, got ${sparkAdmin}`)
 }
 
+function resolveInternalPathname(pathname, host) {
+  if (host.startsWith('info.')) {
+    if (pathname === '/') return '/www/info'
+    return `/www/info${pathname}`
+  }
+  if (host.startsWith('board.')) {
+    if (pathname === '/') return '/www/board'
+    const isPathBoardRoute =
+      pathname === '/board' || pathname.startsWith('/board/')
+    if (isPathBoardRoute) return `/www${pathname}`
+    return `/www/board${pathname}`
+  }
+  if (host.startsWith('admin.')) {
+    if (pathname === '/') return '/www/admin'
+    const isPathAdminRoute =
+      pathname === '/admin' || pathname.startsWith('/admin/')
+    if (isPathAdminRoute) return `/www${pathname}`
+    return `/www/admin${pathname}`
+  }
+  if (host.startsWith('show.')) {
+    if (pathname === '/') return '/show'
+    return `/show${pathname}`
+  }
+  return pathname
+}
+
+const adminSettings = resolveInternalPathname(
+  '/settings',
+  'admin.idosquare.co.kr',
+)
+if (adminSettings !== '/www/admin/settings') {
+  throw new Error(
+    `admin /settings should rewrite to /www/admin/settings, got ${adminSettings}`,
+  )
+}
+
+function isPublicBrowsingSubdomainHost(host) {
+  return (
+    host.startsWith('info.') ||
+    host.startsWith('show.') ||
+    host.startsWith('board.')
+  )
+}
+
+if (!isPublicBrowsingSubdomainHost('info.idosquare.co.kr')) {
+  throw new Error('info should be public browsing host')
+}
+if (isPublicBrowsingSubdomainHost('admin.idosquare.co.kr')) {
+  throw new Error('admin should not be public browsing host')
+}
+
+const showRoot = resolveInternalPathname('/', 'show.idosquare.co.kr')
+if (showRoot !== '/show') {
+  throw new Error(`show / should rewrite to /show, got ${showRoot}`)
+}
+
+const boardRoot = resolveInternalPathname('/', 'board.idosquare.co.kr')
+if (boardRoot !== '/www/board') {
+  throw new Error(`board / should rewrite to /www/board, got ${boardRoot}`)
+}
+
 console.log('OK: redirect logic')

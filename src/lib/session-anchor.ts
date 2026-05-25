@@ -26,3 +26,12 @@ export function buildSessionAnchorCookieValue(
 export function isAnchorExpired(anchorUnix: number, nowUnix = Math.floor(Date.now() / 1000)) {
   return nowUnix - anchorUnix > SESSION_MAX_AGE_SECONDS
 }
+
+/** 프로덕션 서브도메인 간 동일 앵커 쿠키 공유 (Chrome 병렬·호스트 전환 race 완화) */
+export function getSessionAnchorCookieDomain(host: string): string | undefined {
+  const bare = host.split(':')[0].toLowerCase()
+  if (bare === 'idosquare.co.kr' || bare.endsWith('.idosquare.co.kr')) {
+    return '.idosquare.co.kr'
+  }
+  return undefined
+}

@@ -4,6 +4,11 @@ import {
   parseSessionAnchorCookie,
 } from '@/lib/session-anchor'
 
+/**
+ * 커스텀 3시간 세션 앵커 판정.
+ * - 쿠키 없음 / 파싱 실패 → expired: false (차단하지 않음, needsSetCookie로 앵커 심기)
+ * - 파싱 성공 + 만료 → expired: true
+ */
 export function isSessionExpiredByAnchor(
   sessionId: string | null | undefined,
   anchorCookieValue: string | undefined,

@@ -23,6 +23,15 @@ export function isAdminSubdomainHost(host: string) {
   return host.startsWith('admin.')
 }
 
+/** 로그인 없이 열람 가능 — 커스텀 세션 타임아웃(앵커) 미적용 대상 */
+export function isPublicBrowsingSubdomainHost(host: string) {
+  return (
+    isInfoSubdomainHost(host) ||
+    isShowSubdomainHost(host) ||
+    isBoardSubdomainHost(host)
+  )
+}
+
 /** apex (서브도메인 없음) — www와 동일 라우팅 */
 export function isApexIdosquareHost(host: string) {
   const bare = host.split(':')[0]
@@ -47,6 +56,31 @@ export function isPathBoardRoute(pathname: string) {
 
 export function isPathAdminRoute(pathname: string) {
   return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
+/** Spark 사용자 설정 (닉네임·프로필). admin `/settings`와 구분 */
+export function isUserSettingsPath(pathname: string) {
+  return (
+    pathname === '/settings/profile' ||
+    pathname.startsWith('/settings/profile/')
+  )
+}
+
+/** admin 서브도메인 공개 경로 (`/admin` 접두어 없음) */
+export function isAdminSubdomainPublicPath(pathname: string) {
+  if (pathname === '/members' || pathname.startsWith('/members/')) {
+    return true
+  }
+  if (pathname === '/fuel' || pathname.startsWith('/fuel/')) {
+    return true
+  }
+  if (pathname === '/show' || pathname.startsWith('/show/')) {
+    return true
+  }
+  if (pathname === '/settings' || pathname.startsWith('/settings/')) {
+    return true
+  }
+  return false
 }
 
 export function isLocalDevHost(host: string) {
@@ -310,7 +344,7 @@ export function shouldRedirectToSparkMain(
   }
   if (
     pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/settings') ||
+    isUserSettingsPath(pathname) ||
     pathname.startsWith('/api/')
   ) {
     return false
