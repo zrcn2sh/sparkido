@@ -31,7 +31,7 @@ export function AdminShell({ role, host, children }: AdminShellProps) {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-[11rem_minmax(0,1fr)] md:items-start">
-        <AdminNav />
+        <AdminNav host={host} />
         <div className="min-w-0 w-full">{children}</div>
       </div>
 

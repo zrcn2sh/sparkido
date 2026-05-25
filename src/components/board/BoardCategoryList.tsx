@@ -6,6 +6,8 @@ import { getBoardCategoryMeta } from '@/lib/board-categories'
 import { getDisplayNamesByUserIds } from '@/lib/auth'
 import { canCreateBoardPost } from '@/lib/board-permissions'
 import { listBoardPosts } from '@/lib/board'
+import { getRequestHost } from '@/lib/request-host'
+import { resolveBoardPath } from '@/lib/routes'
 import type { BoardCategory } from '@/types'
 
 type BoardCategoryListProps = {
@@ -13,6 +15,7 @@ type BoardCategoryListProps = {
 }
 
 export async function BoardCategoryList({ category }: BoardCategoryListProps) {
+  const host = await getRequestHost()
   const { userId } = await auth()
   const meta = getBoardCategoryMeta(category)
   const canWrite = userId ? await canCreateBoardPost(userId, category) : false
@@ -42,7 +45,9 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
           <Button
             size="sm"
             className="shrink-0"
-            render={<Link href={`/board/${category}/new`} />}
+            render={
+              <Link href={resolveBoardPath(`/${category}/new`, host)} />
+            }
           >
             글쓰기
           </Button>
@@ -67,7 +72,9 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
             <Button
               className="mt-6"
               size="sm"
-              render={<Link href={`/board/${category}/new`} />}
+              render={
+              <Link href={resolveBoardPath(`/${category}/new`, host)} />
+            }
             >
               첫 글 작성하기
             </Button>
@@ -87,6 +94,7 @@ export async function BoardCategoryList({ category }: BoardCategoryListProps) {
             <li key={post.id}>
               <BoardPostCard
                 post={post}
+                host={host}
                 authorName={authorNames[post.authorId] ?? '알 수 없음'}
               />
             </li>

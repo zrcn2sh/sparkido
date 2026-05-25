@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { AdminShell } from '@/components/admin/AdminShell'
-import { resolveSparkPath } from '@/lib/routes'
+import { resolveAdminPath, resolveSparkPath } from '@/lib/routes'
 import { getUserRole, isAdmin } from '@/lib/user-role'
 import { getRequestHost } from '@/lib/request-host'
 
@@ -16,7 +16,9 @@ export default async function AdminLayout({
   const host = await getRequestHost()
 
   if (!userId) {
-    redirect('/sign-in?redirect_url=/admin')
+    redirect(
+      `/sign-in?redirect_url=${encodeURIComponent(resolveAdminPath('/', host))}`,
+    )
   }
 
   if (!(await isAdmin(userId))) {

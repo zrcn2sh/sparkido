@@ -11,6 +11,8 @@ import { BoardCommentsSection } from '@/components/board/BoardCommentsSection'
 import { getUserDisplayName } from '@/lib/auth'
 import { canManageBoardPost } from '@/lib/board-permissions'
 import { getBoardPostById } from '@/lib/board'
+import { getRequestHost } from '@/lib/request-host'
+import { resolveBoardPath } from '@/lib/routes'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +21,8 @@ type BoardDetailPageProps = {
 }
 
 export default async function BoardDetailPage(props: BoardDetailPageProps) {
-  const params = await props.params;
+  const params = await props.params
+  const host = await getRequestHost()
   const { userId } = await auth()
   let post: Awaited<ReturnType<typeof getBoardPostById>> = null
 
@@ -42,7 +45,7 @@ export default async function BoardDetailPage(props: BoardDetailPageProps) {
         variant="ghost"
         size="sm"
         className="-ml-2 mb-4 h-8 text-muted-foreground"
-        render={<Link href={`/board/${post.category}`} />}
+        render={<Link href={resolveBoardPath(`/${post.category}`, host)} />}
       >
         ← {categoryMeta.label}
       </Button>
@@ -68,7 +71,7 @@ export default async function BoardDetailPage(props: BoardDetailPageProps) {
           <Button
             size="sm"
             variant="outline"
-            render={<Link href={`/board/${post.id}/edit`} />}
+            render={<Link href={resolveBoardPath(`/${post.id}/edit`, host)} />}
           >
             수정
           </Button>

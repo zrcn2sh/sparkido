@@ -4,13 +4,18 @@ import { redirect } from 'next/navigation'
 import { BoardPostForm } from '@/components/board/BoardPostForm'
 import { Button } from '@/components/ui/button'
 import { getBoardCategoryMeta } from '@/lib/board-categories'
+import { getRequestHost } from '@/lib/request-host'
+import { resolveBoardPath } from '@/lib/routes'
 
 export default async function BoardFreeNewPage() {
+  const host = await getRequestHost()
   const { userId } = await auth()
   const meta = getBoardCategoryMeta('free')
 
   if (!userId) {
-    redirect(`/sign-in?redirect_url=${encodeURIComponent('/board/free/new')}`)
+    redirect(
+      `/sign-in?redirect_url=${encodeURIComponent(resolveBoardPath('/free/new', host))}`,
+    )
   }
 
   return (
@@ -19,7 +24,7 @@ export default async function BoardFreeNewPage() {
         variant="ghost"
         size="sm"
         className="-ml-2 mb-4 h-8 text-muted-foreground"
-        render={<Link href="/board/free" />}
+        render={<Link href={resolveBoardPath('/free', host)} />}
       >
         ← {meta.label}
       </Button>

@@ -3,21 +3,31 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BOARD_CATEGORIES } from '@/lib/board-categories'
+import { resolveBoardPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 import type { BoardCategory } from '@/types'
 
-function activeCategory(pathname: string): BoardCategory | null {
+function activeCategory(pathname: string, host: string): BoardCategory | null {
   for (const { id } of BOARD_CATEGORIES) {
-    if (pathname === `/board/${id}` || pathname.startsWith(`/board/${id}/`)) {
+    const base = resolveBoardPath(`/${id}`, host)
+    if (pathname === base || pathname.startsWith(`${base}/`)) {
+      return id
+    }
+    const legacy = `/board/${id}`
+    if (pathname === legacy || pathname.startsWith(`${legacy}/`)) {
       return id
     }
   }
   return null
 }
 
-export function BoardNav() {
+type BoardNavProps = {
+  host: string
+}
+
+export function BoardNav({ host }: BoardNavProps) {
   const pathname = usePathname()
-  const current = activeCategory(pathname)
+  const current = activeCategory(pathname, host)
 
   return (
     <nav
@@ -33,7 +43,7 @@ export function BoardNav() {
           return (
             <li key={item.id}>
               <Link
-                href={`/board/${item.id}`}
+                href={resolveBoardPath(`/${item.id}`, host)}
                 className={cn(
                   'block rounded-md px-3 py-2 text-sm transition-colors',
                   isActive

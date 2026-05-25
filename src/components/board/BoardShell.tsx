@@ -6,10 +6,11 @@ import {
 import { cn } from '@/lib/utils'
 
 type BoardShellProps = {
+  host: string
   children: React.ReactNode
 }
 
-export function BoardShell({ children }: BoardShellProps) {
+export function BoardShell({ host, children }: BoardShellProps) {
   return (
     <div
       className={cn(
@@ -20,13 +21,13 @@ export function BoardShell({ children }: BoardShellProps) {
     >
       <aside className="hidden w-44 shrink-0 lg:block">
         <div className="sticky top-16">
-          <BoardNav />
+          <BoardNav host={host} />
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
         <div className="mb-6 lg:hidden">
-          <BoardNav />
+          <BoardNav host={host} />
         </div>
         {children}
       </div>

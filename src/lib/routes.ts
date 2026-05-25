@@ -15,6 +15,14 @@ export function isInfoSubdomainHost(host: string) {
   return host.startsWith('info.')
 }
 
+export function isBoardSubdomainHost(host: string) {
+  return host.startsWith('board.')
+}
+
+export function isAdminSubdomainHost(host: string) {
+  return host.startsWith('admin.')
+}
+
 /** apex (서브도메인 없음) — www와 동일 라우팅 */
 export function isApexIdosquareHost(host: string) {
   const bare = host.split(':')[0]
@@ -31,6 +39,14 @@ export function isPathShowRoute(pathname: string) {
 
 export function isPathInfoRoute(pathname: string) {
   return pathname === '/info' || pathname.startsWith('/info/')
+}
+
+export function isPathBoardRoute(pathname: string) {
+  return pathname === '/board' || pathname.startsWith('/board/')
+}
+
+export function isPathAdminRoute(pathname: string) {
+  return pathname === '/admin' || pathname.startsWith('/admin/')
 }
 
 export function isLocalDevHost(host: string) {
@@ -52,6 +68,36 @@ function infoPublicBase(): string {
   ).replace(/\/$/, '')
 }
 
+function boardPublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_BOARD_URL ?? 'https://board.idosquare.co.kr'
+  ).replace(/\/$/, '')
+}
+
+function adminPublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://admin.idosquare.co.kr'
+  ).replace(/\/$/, '')
+}
+
+/** /board 접두어 제거 후 서브경로만 반환 */
+function boardPathTail(pathname: string): string {
+  if (pathname === '/board') return '/'
+  if (pathname.startsWith('/board/')) {
+    return pathname.slice('/board'.length) || '/'
+  }
+  return pathname.startsWith('/') ? pathname : `/${pathname}`
+}
+
+/** /admin 접두어 제거 */
+function adminPathTail(pathname: string): string {
+  if (pathname === '/admin') return '/'
+  if (pathname.startsWith('/admin/')) {
+    return pathname.slice('/admin'.length) || '/'
+  }
+  return pathname.startsWith('/') ? pathname : `/${pathname}`
+}
+
 /**
  * 프로덕션: 잘못된 서브도메인+경로 조합 → 올바른 호스트로 이동
  */
@@ -65,17 +111,26 @@ export function buildCrossSubdomainRedirect(
   const spark = (process.env.NEXT_PUBLIC_SPARK_URL ?? '').replace(/\/$/, '')
   const show = (process.env.NEXT_PUBLIC_SHOW_URL ?? '').replace(/\/$/, '')
   const info = infoPublicBase()
-  if (!www || !spark || !show || !info) return null
+  const board = boardPublicBase()
+  const admin = adminPublicBase()
+  if (!www || !spark || !show || !info || !board || !admin) return null
 
   if (isPathInfoRoute(pathname) && !isInfoSubdomainHost(host)) {
     const tail = pathname === '/info' ? '' : pathname.slice('/info'.length)
     return `${info}${tail || '/'}`
   }
 
-  if (
-    isWwwOnlyPath(pathname) &&
-    (isSparkSubdomainHost(host) || isShowSubdomainHost(host))
-  ) {
+  if (isPathBoardRoute(pathname) && !isBoardSubdomainHost(host)) {
+    const tail = boardPathTail(pathname)
+    return `${board}${tail === '/' ? '' : tail}`
+  }
+
+  if (isPathAdminRoute(pathname) && !isAdminSubdomainHost(host)) {
+    const tail = adminPathTail(pathname)
+    return `${admin}${tail === '/' ? '' : tail}`
+  }
+
+  if (isWwwPrivacyPath(pathname) && !isWwwHost(host)) {
     return `${www}${pathname}`
   }
 
@@ -114,12 +169,14 @@ export function buildApexToWwwRedirect(
   return `${www}${pathname}${search}`
 }
 
-/** www 호스트(로컬 localhost·apex 포함, spark·show·info 서브도메인 제외) */
+/** www 호스트(로컬 localhost·apex 포함, 다른 서브도메인 제외) */
 export function isWwwHost(host: string) {
   if (!host) return !isLocalEnv()
   if (isSparkSubdomainHost(host)) return false
   if (isShowSubdomainHost(host)) return false
   if (isInfoSubdomainHost(host)) return false
+  if (isBoardSubdomainHost(host)) return false
+  if (isAdminSubdomainHost(host)) return false
   return true
 }
 
@@ -132,24 +189,20 @@ export function isWwwInfoPath(pathname: string) {
 }
 
 export function isWwwBoardPath(pathname: string) {
-  return pathname === '/board' || pathname.startsWith('/board/')
+  return isPathBoardRoute(pathname)
 }
 
 export function isWwwAdminPath(pathname: string) {
-  return pathname === '/admin' || pathname.startsWith('/admin/')
+  return isPathAdminRoute(pathname)
 }
 
 export function isWwwPrivacyPath(pathname: string) {
   return pathname === '/privacy' || pathname.startsWith('/privacy/')
 }
 
-/** www 전용 경로: 게시판·관리자·개인정보 (Info는 info 서브도메인) */
+/** www 전용 경로: 개인정보 (board·admin·info는 각 서브도메인) */
 export function isWwwOnlyPath(pathname: string) {
-  return (
-    isWwwBoardPath(pathname) ||
-    isWwwAdminPath(pathname) ||
-    isWwwPrivacyPath(pathname)
-  )
+  return isWwwPrivacyPath(pathname)
 }
 
 /**
@@ -185,6 +238,18 @@ export function resolveInternalPathname(pathname: string, host: string): string 
     return `/www/info${pathname}`
   }
 
+  if (isBoardSubdomainHost(host)) {
+    if (pathname === '/') return '/www/board'
+    if (isPathBoardRoute(pathname)) return `/www${pathname}`
+    return `/www/board${pathname}`
+  }
+
+  if (isAdminSubdomainHost(host)) {
+    if (pathname === '/') return '/www/admin'
+    if (isPathAdminRoute(pathname)) return `/www${pathname}`
+    return `/www/admin${pathname}`
+  }
+
   if (isShowSubdomainHost(host)) {
     if (pathname === '/') return '/show'
     return `/show${pathname}`
@@ -207,6 +272,14 @@ export function resolveInternalPathname(pathname: string, host: string): string 
     return `/www${pathname}`
   }
 
+  if (isPathBoardRoute(pathname)) {
+    return `/www${pathname}`
+  }
+
+  if (isPathAdminRoute(pathname)) {
+    return `/www${pathname}`
+  }
+
   if (isWwwOnlyPath(pathname)) {
     return `/www${pathname}`
   }
@@ -223,6 +296,8 @@ export function shouldRedirectToSparkMain(
   if (!isWwwHost(host)) return false
   if (isWwwOnlyPath(pathname)) return false
   if (isPathInfoRoute(pathname)) return false
+  if (isPathBoardRoute(pathname)) return false
+  if (isPathAdminRoute(pathname)) return false
   if (isPathShowRoute(pathname)) return false
   if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
     return false
@@ -263,6 +338,50 @@ export function resolveSparkPath(subpath = '', host = '') {
     process.env.NEXT_PUBLIC_SPARK_URL ?? 'https://spark.idosquare.co.kr'
   ).replace(/\/$/, '')
   return `${base}${path}`
+}
+
+/** 게시판 공개 경로 (board 서브도메인에서는 /board 접두어 없음) */
+export function resolveBoardPath(subpath = '', host = '') {
+  const raw = subpath
+    ? subpath.startsWith('/')
+      ? subpath
+      : `/${subpath}`
+    : ''
+  const tail = raw ? boardPathTail(raw.startsWith('/board') ? raw : `/board${raw}`) : '/'
+
+  if (host && isBoardSubdomainHost(host)) {
+    return tail === '/' ? '/' : tail
+  }
+
+  if (isPathBasedNavigationHost(host)) {
+    if (tail === '/') return '/board'
+    return `/board${tail}`
+  }
+
+  const base = boardPublicBase()
+  return tail === '/' ? base : `${base}${tail}`
+}
+
+/** Admin 공개 경로 (admin 서브도메인에서는 /admin 접두어 없음) */
+export function resolveAdminPath(subpath = '', host = '') {
+  const raw = subpath
+    ? subpath.startsWith('/')
+      ? subpath
+      : `/${subpath}`
+    : ''
+  const tail = raw ? adminPathTail(raw.startsWith('/admin') ? raw : `/admin${raw}`) : '/'
+
+  if (host && isAdminSubdomainHost(host)) {
+    return tail === '/' ? '/' : tail
+  }
+
+  if (isPathBasedNavigationHost(host)) {
+    if (tail === '/') return '/admin'
+    return `/admin${tail}`
+  }
+
+  const base = adminPublicBase()
+  return tail === '/' ? base : `${base}${tail}`
 }
 
 /** www ↔ spark ↔ show ↔ info 네비게이션용 */
@@ -308,7 +427,9 @@ export function getAppUrl(
     host &&
     (isSparkSubdomainHost(host) ||
       isShowSubdomainHost(host) ||
-      isInfoSubdomainHost(host))
+      isInfoSubdomainHost(host) ||
+      isBoardSubdomainHost(host) ||
+      isAdminSubdomainHost(host))
   ) {
     return www
   }
@@ -342,4 +463,18 @@ export function getInfoUrl(host = '') {
   if (isPathBasedNavigationHost(host)) return '/info'
   if (host && isInfoSubdomainHost(host)) return '/'
   return infoPublicBase()
+}
+
+/** 게시판 — board.idosquare.co.kr */
+export function getBoardUrl(host = '') {
+  if (isPathBasedNavigationHost(host)) return '/board'
+  if (host && isBoardSubdomainHost(host)) return '/'
+  return boardPublicBase()
+}
+
+/** 관리자 — admin.idosquare.co.kr */
+export function getAdminUrl(host = '') {
+  if (isPathBasedNavigationHost(host)) return '/admin'
+  if (host && isAdminSubdomainHost(host)) return '/'
+  return adminPublicBase()
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useBoardPathBuilder } from '@/hooks/use-board-path'
 import type { BoardCategory, BoardPost } from '@/types'
 
 type BoardPostFormProps = {
@@ -22,6 +23,7 @@ export function BoardPostForm({
   initial,
 }: BoardPostFormProps) {
   const router = useRouter()
+  const boardPath = useBoardPathBuilder()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
@@ -66,7 +68,7 @@ export function BoardPostForm({
       }
 
       const id = mode === 'create' ? data.post!.id : postId!
-      router.push(`/board/${id}`)
+      router.push(boardPath(`/${id}`))
       router.refresh()
     } catch (err) {
       console.error('[BoardPostForm]', err)

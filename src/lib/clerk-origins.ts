@@ -13,6 +13,8 @@ export function getClerkAllowedOrigins(): string[] {
     process.env.NEXT_PUBLIC_SPARK_URL,
     process.env.NEXT_PUBLIC_SHOW_URL,
     process.env.NEXT_PUBLIC_INFO_URL,
+    process.env.NEXT_PUBLIC_BOARD_URL,
+    process.env.NEXT_PUBLIC_ADMIN_URL,
   ]
 
   return urls

@@ -4,24 +4,26 @@ import { AlphaBadge } from '@/components/common/AlphaBadge'
 import { TopNavAuth } from '@/components/common/TopNavAuth'
 import { Separator } from '@/components/ui/separator'
 import { SITE_MAX_WIDTH_CLASS } from '@/lib/layout'
-import { getAppUrl, getInfoUrl, isInfoSubdomainHost } from '@/lib/routes'
+import {
+  getAdminUrl,
+  getAppUrl,
+  getBoardUrl,
+  getInfoUrl,
+  isAdminSubdomainHost,
+  isBoardSubdomainHost,
+  isInfoSubdomainHost,
+} from '@/lib/routes'
 import { getIsAlphaPeriod } from '@/lib/fuel-settings'
 import { isAdmin } from '@/lib/user-role'
 import { cn } from '@/lib/utils'
 import { getRequestHost } from '@/lib/request-host'
 
 type TopNavProps = {
-  variant: 'www' | 'spark' | 'show' | 'info'
+  variant: 'www' | 'spark' | 'show' | 'info' | 'board' | 'admin'
 }
 
 const linkClass =
   'text-sm text-muted-foreground transition-colors hover:text-foreground'
-
-function resolveWwwPath(subpath: string, host: string): string {
-  const base = getAppUrl('www', host).replace(/\/$/, '')
-  const path = subpath.startsWith('/') ? subpath : `/${subpath}`
-  return base ? `${base}${path}` : path
-}
 
 export async function TopNav({ variant }: TopNavProps) {
   const host = await getRequestHost()
@@ -32,10 +34,12 @@ export async function TopNav({ variant }: TopNavProps) {
   const infoHref = getInfoUrl(host)
   const sparkHref = getAppUrl('spark', host)
   const showHref = getAppUrl('show', host)
-  const boardHref = resolveWwwPath('/board', host)
-  const adminHref = resolveWwwPath('/admin', host)
+  const boardHref = getBoardUrl(host)
+  const adminHref = getAdminUrl(host)
   const onInfoHost = isInfoSubdomainHost(host)
-  const idosquareHref = onInfoHost ? '/' : infoHref
+  const onBoardHost = isBoardSubdomainHost(host)
+  const onAdminHost = isAdminSubdomainHost(host)
+  const idosquareHref = onInfoHost || onBoardHost || onAdminHost ? '/' : infoHref
 
   return (
     <header className="sticky top-0 z-50 border-hairline border-b border-border bg-background/80 backdrop-blur-md">
@@ -86,13 +90,27 @@ export async function TopNav({ variant }: TopNavProps) {
               Show
             </Link>
             <Separator orientation="vertical" className="mx-2 h-4" />
-            <Link href={boardHref} className={linkClass}>
+            <Link
+              href={boardHref}
+              className={cn(
+                linkClass,
+                (variant === 'board' || onBoardHost) &&
+                  'font-medium text-foreground',
+              )}
+            >
               Board
             </Link>
             {showAdmin && (
               <>
                 <Separator orientation="vertical" className="mx-2 h-4" />
-                <Link href={adminHref} className={linkClass}>
+                <Link
+                  href={adminHref}
+                  className={cn(
+                    linkClass,
+                    (variant === 'admin' || onAdminHost) &&
+                      'font-medium text-foreground',
+                  )}
+                >
                   Admin
                 </Link>
               </>

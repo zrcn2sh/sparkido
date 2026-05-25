@@ -5,6 +5,8 @@ import { BoardPostForm } from '@/components/board/BoardPostForm'
 import { Button } from '@/components/ui/button'
 import { canManageBoardPost } from '@/lib/board-permissions'
 import { getBoardPostById } from '@/lib/board'
+import { getRequestHost } from '@/lib/request-host'
+import { resolveBoardPath } from '@/lib/routes'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,18 +15,19 @@ type BoardEditPageProps = {
 }
 
 export default async function BoardEditPage(props: BoardEditPageProps) {
-  const params = await props.params;
+  const params = await props.params
+  const host = await getRequestHost()
   const { userId } = await auth()
   if (!userId) {
     redirect(
-      `/sign-in?redirect_url=${encodeURIComponent(`/board/${params.id}/edit`)}`,
+      `/sign-in?redirect_url=${encodeURIComponent(resolveBoardPath(`/${params.id}/edit`, host))}`,
     )
   }
 
   const post = await getBoardPostById(params.id)
   if (!post) notFound()
   if (!(await canManageBoardPost(userId, post))) {
-    redirect(`/board/${params.id}`)
+    redirect(resolveBoardPath(`/${params.id}`, host))
   }
 
   return (
@@ -33,7 +36,7 @@ export default async function BoardEditPage(props: BoardEditPageProps) {
         variant="ghost"
         size="sm"
         className="-ml-2 mb-4 h-8 text-muted-foreground"
-        render={<Link href={`/board/${post.id}`} />}
+        render={<Link href={resolveBoardPath(`/${post.id}`, host)} />}
       >
         ← 게시글
       </Button>

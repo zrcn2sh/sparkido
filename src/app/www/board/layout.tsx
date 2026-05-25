@@ -1,9 +1,11 @@
 import { BoardShell } from '@/components/board/BoardShell'
+import { getRequestHost } from '@/lib/request-host'
 
-export default function BoardLayout({
+export default async function BoardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <BoardShell>{children}</BoardShell>
+  const host = await getRequestHost()
+  return <BoardShell host={host}>{children}</BoardShell>
 }

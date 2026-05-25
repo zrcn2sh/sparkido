@@ -13,7 +13,7 @@ export function HeroIllustration() {
           width={HERO_WIDTH}
           height={HERO_HEIGHT}
           priority
-          quality={90}
+          unoptimized
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 92vw, 896px"
           className="h-auto w-full object-contain"
         />

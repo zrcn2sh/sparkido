@@ -3,14 +3,16 @@ import { MarkdownBody } from '@/components/markdown/MarkdownBody'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatKstDate } from '@/lib/datetime'
 import { cn } from '@/lib/utils'
+import { resolveBoardPath } from '@/lib/routes'
 import type { BoardPost } from '@/types'
 
 type BoardPostCardProps = {
   post: BoardPost
+  host: string
   authorName: string
 }
 
-export function BoardPostCard({ post, authorName }: BoardPostCardProps) {
+export function BoardPostCard({ post, host, authorName }: BoardPostCardProps) {
   return (
     <Card
       size="sm"
@@ -19,7 +21,7 @@ export function BoardPostCard({ post, authorName }: BoardPostCardProps) {
       <CardHeader className="gap-2">
         <div className="flex items-start justify-between gap-3">
           <Link
-            href={`/board/${post.id}`}
+            href={resolveBoardPath(`/${post.id}`, host)}
             className="group min-w-0 flex-1 space-y-2"
           >
             <CardTitle className="group-hover:text-primary">{post.title}</CardTitle>

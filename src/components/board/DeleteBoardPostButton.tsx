@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-
+import { useBoardPathBuilder } from '@/hooks/use-board-path'
 import type { BoardCategory } from '@/types'
 
 type DeleteBoardPostButtonProps = {
@@ -16,6 +16,7 @@ export function DeleteBoardPostButton({
   category,
 }: DeleteBoardPostButtonProps) {
   const router = useRouter()
+  const boardPath = useBoardPathBuilder()
   const [pending, setPending] = useState(false)
 
   async function handleDelete() {
@@ -35,7 +36,7 @@ export function DeleteBoardPostButton({
         return
       }
 
-      router.push(`/board/${category}`)
+      router.push(boardPath(`/${category}`))
       router.refresh()
     } catch {
       alert('네트워크 오류가 발생했습니다.')

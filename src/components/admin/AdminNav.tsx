@@ -3,9 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav'
+import { resolveAdminPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
-export function AdminNav() {
+type AdminNavProps = {
+  host: string
+}
+
+export function AdminNav({ host }: AdminNavProps) {
   const pathname = usePathname()
 
   return (
@@ -14,13 +19,17 @@ export function AdminNav() {
       aria-label="Admin 메뉴"
     >
       {ADMIN_NAV_ITEMS.map((item) => {
+        const href = resolveAdminPath(item.path, host)
         const active =
-          pathname === item.href || pathname.startsWith(`${item.href}/`)
+          pathname === href ||
+          pathname.startsWith(`${href}/`) ||
+          pathname === `/admin${item.path}` ||
+          pathname.startsWith(`/admin${item.path}/`)
 
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={item.path}
+            href={href}
             className={cn(
               'w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
               active
