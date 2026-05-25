@@ -72,7 +72,15 @@ export function ShowTileCard({
           {tile.iconText}
         </span>
       ) : null}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10" />
+      {hasTileVisual ? (
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-x-0 bottom-0 z-[1] bg-gradient-to-t from-black/80 via-black/40 to-transparent',
+            compact ? 'h-[55%] max-h-14' : 'h-[42%] max-h-28 sm:max-h-32',
+          )}
+          aria-hidden
+        />
+      ) : null}
       {tile.recommendCount > 0 && (
         <div
           className={cn(
@@ -100,7 +108,7 @@ export function ShowTileCard({
       )}
       <div
         className={cn(
-          'relative flex h-full flex-col justify-end',
+          'relative z-[2] flex h-full flex-col justify-end',
           compact ? 'p-1' : 'p-1.5 sm:p-2',
         )}
       >
