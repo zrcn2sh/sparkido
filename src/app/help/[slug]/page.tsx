@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { AppIconImage } from '@/components/idoweb/AppIconImage'
 import { HelpMarkdown } from '@/components/idoweb/HelpMarkdown'
 import { IdoWebShell } from '@/components/idoweb/IdoWebShell'
 import { getHelpArticle } from '@/content/help/articles'
@@ -39,14 +39,7 @@ export default async function HelpArticlePage({ params }: PageProps) {
       <article className="w-full max-w-2xl">
         {app ? (
           <div className="mb-6 flex items-center gap-3">
-            <Image
-              src={app.iconUrl}
-              alt=""
-              width={48}
-              height={48}
-              className="size-12 shrink-0 rounded-xl object-cover"
-              unoptimized
-            />
+            <AppIconImage src={app.iconUrl} size="md" alt={app.name} />
             <h1 className="text-2xl font-bold text-white">{article.title}</h1>
           </div>
         ) : (

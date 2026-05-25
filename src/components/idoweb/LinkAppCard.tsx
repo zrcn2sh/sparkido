@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { CircleHelp, Clock } from 'lucide-react'
+import { AppIconImage } from '@/components/idoweb/AppIconImage'
 import {
   APP_STORE_BADGE_URL,
   GOOGLE_PLAY_BADGE_URL,
@@ -19,14 +19,7 @@ export function LinkAppCard({ app, host }: LinkAppCardProps) {
 
   return (
     <article className="flex gap-4 rounded-[14px] border border-white/10 bg-white/[0.06] p-[18px_20px] text-left">
-      <Image
-        src={app.iconUrl}
-        alt=""
-        width={56}
-        height={56}
-        className="size-14 shrink-0 rounded-xl object-cover bg-white/[0.08]"
-        unoptimized
-      />
+      <AppIconImage src={app.iconUrl} size="lg" alt={app.name} />
       <div className="min-w-0 flex-1">
         <h2 className="text-lg font-bold text-white">{app.name}</h2>
         <p className="mt-1 text-sm leading-snug text-slate-300">{app.descriptionKo}</p>
@@ -41,13 +34,14 @@ export function LinkAppCard({ app, host }: LinkAppCardProps) {
               rel="noopener noreferrer"
               className="inline-flex min-w-0 flex-1 items-center justify-center rounded-[10px] bg-white px-2 py-1.5"
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={APP_STORE_BADGE_URL}
-                alt="App Store"
+                alt="App Store에서 다운로드"
                 width={120}
                 height={40}
                 className="h-auto max-h-10 w-full object-contain"
-                unoptimized
+                decoding="async"
               />
             </a>
           ) : null}
@@ -58,13 +52,14 @@ export function LinkAppCard({ app, host }: LinkAppCardProps) {
               rel="noopener noreferrer"
               className="inline-flex min-w-0 flex-1 items-center justify-center rounded-[10px] bg-white px-2 py-1.5"
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={GOOGLE_PLAY_BADGE_URL}
-                alt="Google Play"
+                alt="Google Play에서 다운로드"
                 width={120}
                 height={40}
                 className="h-auto max-h-10 w-full object-contain"
-                unoptimized
+                decoding="async"
               />
             </a>
           ) : app.playStorePending ? (
