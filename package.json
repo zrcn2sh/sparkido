@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages@1",
+    "deploy:pages": "wrangler pages deploy",
     "db:migrate:local": "wrangler d1 migrations apply sparkido --local",
     "db:migrate:remote": "wrangler d1 migrations apply sparkido --remote"
   },
@@ -39,6 +41,6 @@
     "tailwindcss": "^4.3.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5",
-    "wrangler": "^3.114.17"
+    "wrangler": "^4.94.0"
   }
 }
