@@ -13,6 +13,9 @@ const nextConfig = {
     'info.localhost',
     'info.localhost:3000',
     'info.localhost:3001',
+    'www.localhost',
+    'www.localhost:3000',
+    'www.localhost:3001',
   ],
 }
 

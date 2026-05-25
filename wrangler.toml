@@ -2,6 +2,11 @@
 name = "sparkido"
 main = ".open-next/worker.js"
 compatibility_date = "2025-05-20"
+
+# Custom Domain — Dashboard에 없으면 deploy 시 www 연결 시도
+[[routes]]
+pattern = "www.idosquare.co.kr"
+custom_domain = true
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 # OpenNext handler maps node:sqlite → require("sqlite"); Workers에는 npm 패키지 sqlite 없음

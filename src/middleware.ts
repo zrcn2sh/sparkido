@@ -13,6 +13,7 @@ import {
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/session-config'
 import {
+  buildApexToWwwRedirect,
   buildCrossSubdomainRedirect,
   buildSparkRedirectUrl,
   resolveInternalPathname,
@@ -185,6 +186,20 @@ export default clerkMiddleware(async (auth, req) => {
         sessionResult.markLoginEnriched,
       )
     }
+  }
+
+  const apexWww = buildApexToWwwRedirect(
+    pathname,
+    host,
+    req.nextUrl.search,
+  )
+  if (apexWww) {
+    return applySessionAnchorCookie(
+      NextResponse.redirect(apexWww),
+      sessionResult.setAnchor,
+      sessionResult.clearAnchor,
+      sessionResult.markLoginEnriched,
+    )
   }
 
   const crossHost = buildCrossSubdomainRedirect(pathname, host)

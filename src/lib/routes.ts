@@ -15,6 +15,16 @@ export function isInfoSubdomainHost(host: string) {
   return host.startsWith('info.')
 }
 
+/** apex (서브도메인 없음) — www와 동일 라우팅 */
+export function isApexIdosquareHost(host: string) {
+  const bare = host.split(':')[0]
+  return bare === 'idosquare.co.kr'
+}
+
+export function isWwwSubdomainHost(host: string) {
+  return host.startsWith('www.')
+}
+
 export function isPathShowRoute(pathname: string) {
   return pathname === '/show' || pathname.startsWith('/show/')
 }
@@ -87,7 +97,24 @@ export function buildCrossSubdomainRedirect(
   return null
 }
 
-/** www 호스트(로컬 localhost 포함, spark·show·info 서브도메인 제외) */
+/**
+ * apex(idosquare.co.kr) → www.idosquare.co.kr (Worker에 apex가 연결된 경우)
+ */
+export function buildApexToWwwRedirect(
+  pathname: string,
+  host: string,
+  search = '',
+): string | null {
+  if (!isApexIdosquareHost(host) || isPathBasedNavigationHost(host)) return null
+  const www = (process.env.NEXT_PUBLIC_WWW_URL ?? 'https://www.idosquare.co.kr').replace(
+    /\/$/,
+    '',
+  )
+  if (!www) return null
+  return `${www}${pathname}${search}`
+}
+
+/** www 호스트(로컬 localhost·apex 포함, spark·show·info 서브도메인 제외) */
 export function isWwwHost(host: string) {
   if (!host) return !isLocalEnv()
   if (isSparkSubdomainHost(host)) return false

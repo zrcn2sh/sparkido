@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { NicknameRegistrationPrompt } from '@/components/auth/NicknameRegistrationPrompt'
 import { AuthFuelRewardToasts } from '@/components/fuel/AuthFuelRewardToasts'
 import { ClerkSetupRequired } from '@/components/providers/ClerkSetupRequired'
+import { getClerkAllowedOrigins } from '@/lib/clerk-origins'
 
 type AppProvidersProps = {
   children: React.ReactNode
@@ -21,12 +22,17 @@ export function AppProviders({ children }: AppProvidersProps) {
     return <ClerkSetupRequired />
   }
 
+  const allowedRedirectOrigins = getClerkAllowedOrigins()
+
   return (
     <ClerkProvider
       publishableKey={publishableKey}
       signInFallbackRedirectUrl="/"
       signUpFallbackRedirectUrl="/"
       afterSignUpUrl="/"
+      {...(allowedRedirectOrigins.length > 0
+        ? { allowedRedirectOrigins }
+        : {})}
     >
       {children}
       <Suspense fallback={null}>

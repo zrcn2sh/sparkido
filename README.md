@@ -127,6 +127,34 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 값 변경 후 **반드시 재배포**(Build부터 다시).
 
+### show / info에서 403 (Clerk)
+
+`spark`는 되는데 **`show.idosquare.co.kr` · `info.idosquare.co.kr`만 403**이면, HTML은 열리지만 브라우저가 Clerk Frontend API를 막는 경우가 많습니다. (개발자 도구 → Network에서 `clerk` / `frontend-api` 요청이 **403**인지 확인)
+
+**Clerk Dashboard (프로덕션 인스턴스, `pk_live_…` 키와 동일 앱)**
+
+1. **Configure → Domains**
+   - Production **root domain**: `idosquare.co.kr` (또는 Clerk에 등록한 기본 도메인)
+2. **Allowed Subdomains** ([문서](https://clerk.com/docs/guides/dashboard/dns-domains/subdomain-allowlist))
+   - **Enable allowed subdomains**가 켜져 있으면, 아래를 **모두** 추가해야 합니다.
+   - `www.idosquare.co.kr`
+   - `spark.idosquare.co.kr`
+   - `show.idosquare.co.kr`
+   - `info.idosquare.co.kr`
+   - (빠진 서브도메인만 FAPI 403)
+   - 또는 보안 요구가 낮으면 **Enable allowed subdomains 끄기** → 모든 서브도메인 허용
+3. **Paths / Redirect URLs** (메뉴명은 버전에 따라 다름)
+   - Sign-in·Sign-up 후 돌아올 URL에 각 호스트 허용, 예:
+   - `https://show.idosquare.co.kr/*`
+   - `https://info.idosquare.co.kr/*`
+   - `https://spark.idosquare.co.kr/*`
+   - `https://www.idosquare.co.kr/*`
+4. **Cloudflare Workers Builds**
+   - Build variables에 `NEXT_PUBLIC_SHOW_URL`, `NEXT_PUBLIC_INFO_URL` 포함 (앱이 `allowedRedirectOrigins`에 반영)
+   - 변경 후 **재빌드·재배포**
+
+앱은 show·info 페이지를 **비로그인 열람** 가능하게 두었습니다. 403이 **전체 페이지**(Cloudflare HTML)이면 Custom Domain·WAF를, **Clerk API만** 403이면 위 Dashboard 설정을 우선 확인하세요.
+
 ### D1 API 오류가 날 때
 
 `A request to the Cloudflare API (.../d1/database/.../query) failed` 는 보통 아래 중 하나입니다.
@@ -149,6 +177,25 @@ npx wrangler d1 execute sparkido --remote --command "SELECT name FROM sqlite_mas
 ```bash
 npm run db:migrate:remote
 ```
+
+### www.idosquare.co.kr 접속이 안 될 때
+
+`spark` / `info` / `show`는 되는데 **www만 안 되면** 앱 코드가 아니라 **Cloudflare DNS·리다이렉트** 문제인 경우가 많습니다.
+
+| 증상 | 원인 | 조치 |
+|------|------|------|
+| `www` → `https://idosquare.co.kr/...` 로 **301** (응답에 `x-opennext` 없음) | Zone **Redirect Rule** 등으로 www가 apex로만 보냄 | Dashboard → **Rules** → Redirect Rules에서 `www` → apex 규칙 **삭제** |
+| apex(`idosquare.co.kr`) DNS 없음 / 연결 실패 | apex 레코드 미설정 | Worker **Custom Domains**에 `www.idosquare.co.kr` 추가 (또는 `wrangler.toml`의 `[[routes]]` deploy 후 확인) |
+| www 루트만 Spark로 가고 “www가 안 됨” | 의도된 동작 | 게시판은 **`https://www.idosquare.co.kr/board`** 로 접속 |
+
+**권장 설정 (Cloudflare)**
+
+1. **Workers & Pages** → **sparkido** → **Settings** → **Domains & Routes** → Custom Domain: `www.idosquare.co.kr` (spark·info·show와 동일)
+2. **Rules** → www를 `idosquare.co.kr`(apex)로 보내는 리다이렉트 **제거**
+3. (선택) apex도 Worker에 연결할 경우 Custom Domain `idosquare.co.kr` 추가 — 앱이 apex 요청을 **www로 리다이렉트**함
+4. **Clerk** → Allowed origins / Redirect URLs에 `https://www.idosquare.co.kr` 포함
+
+로컬에서 www 호스트 테스트: hosts에 `127.0.0.1 www.localhost` 추가, `NEXT_PUBLIC_WWW_URL=http://www.localhost:3000` 또는 `http://localhost:3000` + `/board`.
 
 자세한 로드맵은 [`claude.md`](./claude.md)를 참고하세요.
 
