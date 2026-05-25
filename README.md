@@ -3,7 +3,10 @@
 **Idosquare** — 1인 개발자를 위한 아이디어(Spark) 등록과 실행 기록(Lab) 커뮤니티.
 
 - **spark** · 메인 · Spark / Lab (`spark.idosquare.co.kr`, `www` 루트는 여기로 리다이렉트)
+- **show** · Show (`show.idosquare.co.kr`)
 - **info** · 회사 소개 (`info.idosquare.co.kr`)
+- **link** · 앱 소개·스토어 링크 (`link.idosquare.co.kr`, idoweb-app 이전)
+- **help** · 앱 도움말 (`help.idosquare.co.kr`, idoweb-app 이전)
 - **board** · 게시판 (`board.idosquare.co.kr`)
 - **admin** · 관리자 (`admin.idosquare.co.kr`)
 - **www** · 개인정보 등 (`www.idosquare.co.kr`, 루트는 Spark로 리다이렉트)
@@ -96,7 +99,7 @@ sparkido/
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk (클라이언트) |
 | `CLERK_SECRET_KEY` | Clerk (서버) |
 | `CLERK_WEBHOOK_SIGNING_SECRET` | 로그인 이력 Webhook (배포 후) |
-| `NEXT_PUBLIC_WWW_URL` / `NEXT_PUBLIC_INFO_URL` / `NEXT_PUBLIC_BOARD_URL` / `NEXT_PUBLIC_ADMIN_URL` / `NEXT_PUBLIC_SPARK_URL` / `NEXT_PUBLIC_SHOW_URL` | 서브도메인 URL |
+| `NEXT_PUBLIC_WWW_URL` / `NEXT_PUBLIC_INFO_URL` / `NEXT_PUBLIC_LINK_URL` / `NEXT_PUBLIC_HELP_URL` / `NEXT_PUBLIC_BOARD_URL` / `NEXT_PUBLIC_ADMIN_URL` / `NEXT_PUBLIC_SPARK_URL` / `NEXT_PUBLIC_SHOW_URL` | 서브도메인 URL |
 | `D1_DATABASE_ID` 등 | Cloudflare (배포·원격 DB) |
 
 ## 배포 (Cloudflare Workers + OpenNext)
@@ -143,7 +146,7 @@ Git **Create application** → `zrcn2sh/sparkido`
 
 ### 간헐적 403 (미들웨어·세션)
 
-- **info / show / board**: 공개 열람 — 커스텀 `sparkido_sess_anchor` 타임아웃 미적용 (`shouldEnforceCustomSessionTimeout`)
+- **info / show / board / link / help**: 공개 열람 — 커스텀 `sparkido_sess_anchor` 타임아웃 미적용 (`shouldEnforceCustomSessionTimeout`)
 - **admin**: 로그인·관리자 필수 — 앵커 타임아웃 **적용**
 - 만료 시 미들웨어에서 `revokeSession` 하지 않음 (Chrome 병렬 요청 race → Clerk 403 완화)
 - 앵커 쿠키 `domain=.idosquare.co.kr` (프로덕션) — 서브도메인 간 동일 앵커

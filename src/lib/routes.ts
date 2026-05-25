@@ -23,12 +23,22 @@ export function isAdminSubdomainHost(host: string) {
   return host.startsWith('admin.')
 }
 
+export function isLinkSubdomainHost(host: string) {
+  return host.startsWith('link.')
+}
+
+export function isHelpSubdomainHost(host: string) {
+  return host.startsWith('help.')
+}
+
 /** 로그인 없이 열람 가능 — 커스텀 세션 타임아웃(앵커) 미적용 대상 */
 export function isPublicBrowsingSubdomainHost(host: string) {
   return (
     isInfoSubdomainHost(host) ||
     isShowSubdomainHost(host) ||
-    isBoardSubdomainHost(host)
+    isBoardSubdomainHost(host) ||
+    isLinkSubdomainHost(host) ||
+    isHelpSubdomainHost(host)
   )
 }
 
@@ -56,6 +66,14 @@ export function isPathBoardRoute(pathname: string) {
 
 export function isPathAdminRoute(pathname: string) {
   return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
+export function isPathLinkRoute(pathname: string) {
+  return pathname === '/link' || pathname.startsWith('/link/')
+}
+
+export function isPathHelpRoute(pathname: string) {
+  return pathname === '/help' || pathname.startsWith('/help/')
 }
 
 /** Spark 사용자 설정 (닉네임·프로필). admin `/settings`와 구분 */
@@ -114,11 +132,41 @@ function adminPublicBase(): string {
   ).replace(/\/$/, '')
 }
 
+function linkPublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_LINK_URL ?? 'https://link.idosquare.co.kr'
+  ).replace(/\/$/, '')
+}
+
+function helpPublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_HELP_URL ?? 'https://help.idosquare.co.kr'
+  ).replace(/\/$/, '')
+}
+
 /** /board 접두어 제거 후 서브경로만 반환 */
 function boardPathTail(pathname: string): string {
   if (pathname === '/board') return '/'
   if (pathname.startsWith('/board/')) {
     return pathname.slice('/board'.length) || '/'
+  }
+  return pathname.startsWith('/') ? pathname : `/${pathname}`
+}
+
+/** /link 접두어 제거 */
+function linkPathTail(pathname: string): string {
+  if (pathname === '/link') return '/'
+  if (pathname.startsWith('/link/')) {
+    return pathname.slice('/link'.length) || '/'
+  }
+  return pathname.startsWith('/') ? pathname : `/${pathname}`
+}
+
+/** /help 접두어 제거 */
+function helpPathTail(pathname: string): string {
+  if (pathname === '/help') return '/'
+  if (pathname.startsWith('/help/')) {
+    return pathname.slice('/help'.length) || '/'
   }
   return pathname.startsWith('/') ? pathname : `/${pathname}`
 }
@@ -164,6 +212,21 @@ export function buildCrossSubdomainRedirect(
     if (!admin) return null
     const tail = adminPathTail(pathname)
     return `${admin}${tail === '/' ? '' : tail}`
+  }
+
+  const link = linkPublicBase()
+  const help = helpPublicBase()
+
+  if (isPathLinkRoute(pathname) && !isLinkSubdomainHost(host)) {
+    if (!link) return null
+    const tail = linkPathTail(pathname)
+    return `${link}${tail === '/' ? '' : tail}`
+  }
+
+  if (isPathHelpRoute(pathname) && !isHelpSubdomainHost(host)) {
+    if (!help) return null
+    const tail = helpPathTail(pathname)
+    return `${help}${tail === '/' ? '' : tail}`
   }
 
   if (isWwwPrivacyPath(pathname) && !isWwwHost(host)) {
@@ -217,6 +280,8 @@ export function isWwwHost(host: string) {
   if (isInfoSubdomainHost(host)) return false
   if (isBoardSubdomainHost(host)) return false
   if (isAdminSubdomainHost(host)) return false
+  if (isLinkSubdomainHost(host)) return false
+  if (isHelpSubdomainHost(host)) return false
   return true
 }
 
@@ -273,6 +338,16 @@ export function buildSparkRedirectUrl(pathname: string, host = ''): string {
 
 /** 미들웨어 rewrite: 공개 URL → app/www|spark|show 내부 경로 */
 export function resolveInternalPathname(pathname: string, host: string): string {
+  if (isLinkSubdomainHost(host)) {
+    if (pathname === '/') return '/link'
+    return `/link${pathname}`
+  }
+
+  if (isHelpSubdomainHost(host)) {
+    if (pathname === '/') return '/help'
+    return `/help${pathname}`
+  }
+
   if (isInfoSubdomainHost(host)) {
     if (pathname === '/') return '/www/info'
     return `/www/info${pathname}`
@@ -320,6 +395,14 @@ export function resolveInternalPathname(pathname: string, host: string): string 
     return `/www${pathname}`
   }
 
+  if (isPathLinkRoute(pathname)) {
+    return pathname
+  }
+
+  if (isPathHelpRoute(pathname)) {
+    return pathname
+  }
+
   if (isWwwOnlyPath(pathname)) {
     return `/www${pathname}`
   }
@@ -338,6 +421,8 @@ export function shouldRedirectToSparkMain(
   if (isPathInfoRoute(pathname)) return false
   if (isPathBoardRoute(pathname)) return false
   if (isPathAdminRoute(pathname)) return false
+  if (isPathLinkRoute(pathname)) return false
+  if (isPathHelpRoute(pathname)) return false
   if (isPathShowRoute(pathname)) return false
   if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
     return false
@@ -469,7 +554,9 @@ export function getAppUrl(
       isShowSubdomainHost(host) ||
       isInfoSubdomainHost(host) ||
       isBoardSubdomainHost(host) ||
-      isAdminSubdomainHost(host))
+      isAdminSubdomainHost(host) ||
+      isLinkSubdomainHost(host) ||
+      isHelpSubdomainHost(host))
   ) {
     return www
   }
@@ -517,4 +604,60 @@ export function getAdminUrl(host = '') {
   if (isPathBasedNavigationHost(host)) return '/admin'
   if (host && isAdminSubdomainHost(host)) return '/'
   return adminPublicBase()
+}
+
+/** 앱 소개·다운로드 — link.idosquare.co.kr */
+export function getLinkUrl(host = '') {
+  if (isPathBasedNavigationHost(host)) return '/link'
+  if (host && isLinkSubdomainHost(host)) return '/'
+  return linkPublicBase()
+}
+
+/** 앱 도움말 — help.idosquare.co.kr */
+export function getHelpUrl(host = '') {
+  if (isPathBasedNavigationHost(host)) return '/help'
+  if (host && isHelpSubdomainHost(host)) return '/'
+  return helpPublicBase()
+}
+
+export function resolveHelpPath(subpath = '', host = '') {
+  const raw = subpath
+    ? subpath.startsWith('/')
+      ? subpath
+      : `/${subpath}`
+    : ''
+  const tail = raw ? helpPathTail(raw.startsWith('/help') ? raw : `/help${raw}`) : '/'
+
+  if (host && isHelpSubdomainHost(host)) {
+    return tail === '/' ? '/' : tail
+  }
+
+  if (isPathBasedNavigationHost(host)) {
+    if (tail === '/') return '/help'
+    return `/help${tail}`
+  }
+
+  const base = helpPublicBase()
+  return tail === '/' ? base : `${base}${tail}`
+}
+
+export function resolveLinkPath(subpath = '', host = '') {
+  const raw = subpath
+    ? subpath.startsWith('/')
+      ? subpath
+      : `/${subpath}`
+    : ''
+  const tail = raw ? linkPathTail(raw.startsWith('/link') ? raw : `/link${raw}`) : '/'
+
+  if (host && isLinkSubdomainHost(host)) {
+    return tail === '/' ? '/' : tail
+  }
+
+  if (isPathBasedNavigationHost(host)) {
+    if (tail === '/') return '/link'
+    return `/link${tail}`
+  }
+
+  const base = linkPublicBase()
+  return tail === '/' ? base : `${base}${tail}`
 }

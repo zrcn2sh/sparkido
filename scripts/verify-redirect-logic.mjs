@@ -119,6 +119,14 @@ function resolveInternalPathname(pathname, host) {
     if (pathname === '/') return '/show'
     return `/show${pathname}`
   }
+  if (host.startsWith('link.')) {
+    if (pathname === '/') return '/link'
+    return `/link${pathname}`
+  }
+  if (host.startsWith('help.')) {
+    if (pathname === '/') return '/help'
+    return `/help${pathname}`
+  }
   return pathname
 }
 
@@ -136,7 +144,9 @@ function isPublicBrowsingSubdomainHost(host) {
   return (
     host.startsWith('info.') ||
     host.startsWith('show.') ||
-    host.startsWith('board.')
+    host.startsWith('board.') ||
+    host.startsWith('link.') ||
+    host.startsWith('help.')
   )
 }
 
@@ -155,6 +165,21 @@ if (showRoot !== '/show') {
 const boardRoot = resolveInternalPathname('/', 'board.idosquare.co.kr')
 if (boardRoot !== '/www/board') {
   throw new Error(`board / should rewrite to /www/board, got ${boardRoot}`)
+}
+
+const linkRoot = resolveInternalPathname('/', 'link.idosquare.co.kr')
+if (linkRoot !== '/link') {
+  throw new Error(`link / should rewrite to /link, got ${linkRoot}`)
+}
+
+const helpArticle = resolveInternalPathname(
+  '/feelog-diary',
+  'help.idosquare.co.kr',
+)
+if (helpArticle !== '/help/feelog-diary') {
+  throw new Error(
+    `help /feelog-diary should rewrite to /help/feelog-diary, got ${helpArticle}`,
+  )
 }
 
 console.log('OK: redirect logic')

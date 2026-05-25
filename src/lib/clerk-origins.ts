@@ -6,6 +6,8 @@ const PRODUCTION_IDOSQUARE_ORIGINS = [
   'https://info.idosquare.co.kr',
   'https://board.idosquare.co.kr',
   'https://admin.idosquare.co.kr',
+  'https://link.idosquare.co.kr',
+  'https://help.idosquare.co.kr',
 ] as const
 
 /** ClerkProvider·미들웨어용 허용 오리진 (서브도메인) */
@@ -25,6 +27,8 @@ export function getClerkAllowedOrigins(): string[] {
     process.env.NEXT_PUBLIC_INFO_URL,
     process.env.NEXT_PUBLIC_BOARD_URL,
     process.env.NEXT_PUBLIC_ADMIN_URL,
+    process.env.NEXT_PUBLIC_LINK_URL,
+    process.env.NEXT_PUBLIC_HELP_URL,
   ]
 
   const fromEnv = urls
@@ -40,6 +44,8 @@ export function getClerkAllowedOrigins(): string[] {
           'http://info.localhost:3000',
           'http://board.localhost:3000',
           'http://admin.localhost:3000',
+          'http://link.localhost:3000',
+          'http://help.localhost:3000',
           'http://www.localhost:3000',
         ]
       : []

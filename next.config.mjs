@@ -26,6 +26,12 @@ const nextConfig = {
     'admin.localhost',
     'admin.localhost:3000',
     'admin.localhost:3001',
+    'link.localhost',
+    'link.localhost:3000',
+    'link.localhost:3001',
+    'help.localhost',
+    'help.localhost:3000',
+    'help.localhost:3001',
   ],
 }
 
