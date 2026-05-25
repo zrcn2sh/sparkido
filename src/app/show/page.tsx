@@ -1,15 +1,13 @@
-export const runtime = 'edge'
-
 import { ShowMain } from '@/components/show/ShowMain'
 import { SparkPageShell } from '@/components/spark/SparkPageShell'
 import { listShowPages } from '@/lib/show-tiles'
 import { auth } from '@clerk/nextjs/server'
-import { headers } from 'next/headers'
+import { getRequestHost } from '@/lib/request-host'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ShowPage() {
-  const host = headers().get('host') ?? ''
+  const host = await getRequestHost()
   const { userId } = await auth()
   let pages: Awaited<ReturnType<typeof listShowPages>> = []
   let loadError: string | null = null

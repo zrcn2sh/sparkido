@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -20,17 +18,18 @@ import { listLabLogsBySparkId } from '@/lib/labs'
 import { getFuelSettings } from '@/lib/fuel-settings'
 import { countSparkCheers } from '@/lib/spark-fuel'
 import { getSparkById } from '@/lib/sparks'
+import { getRequestHost } from '@/lib/request-host'
 import { resolveSparkPath } from '@/lib/routes'
-import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
 type SparkDetailPageProps = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default async function SparkDetailPage({ params }: SparkDetailPageProps) {
-  const host = headers().get('host') ?? ''
+export default async function SparkDetailPage(props: SparkDetailPageProps) {
+  const params = await props.params;
+  const host = await getRequestHost()
   let spark: Awaited<ReturnType<typeof getSparkById>> = null
   let logs: Awaited<ReturnType<typeof listLabLogsBySparkId>> = []
 

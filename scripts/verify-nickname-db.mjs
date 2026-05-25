@@ -11,7 +11,7 @@ function nowKstIso() {
 }
 
 async function main() {
-  const { env } = await getPlatformProxy({ configPath: 'wrangler.toml' })
+  const { env } = await getPlatformProxy({ configPath: 'wrangler.dev.toml' })
   const db = env.DB
   if (!db) throw new Error('D1 binding DB missing')
 

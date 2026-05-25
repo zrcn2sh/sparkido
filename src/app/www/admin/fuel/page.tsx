@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { AdminFuelLedgerPanel } from '@/components/admin/AdminFuelLedgerPanel'
 import { AdminPageSection } from '@/components/admin/admin-layout'
 import { listAdminMembers } from '@/lib/admin-users'

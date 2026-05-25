@@ -1,16 +1,14 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { SparkForm } from '@/components/spark/SparkForm'
 import { SparkPageShell } from '@/components/spark/SparkPageShell'
+import { getRequestHost } from '@/lib/request-host'
 import { resolveSparkPath } from '@/lib/routes'
 
 export default async function SparkNewPage() {
   const { userId } = await auth()
   if (!userId) {
-    const host = headers().get('host') ?? ''
+    const host = await getRequestHost()
     const returnUrl = resolveSparkPath('/new', host)
     redirect(
       `/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`,

@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { FlaskConical, Zap } from 'lucide-react'
 import { HeroIllustration } from '@/components/www/HeroIllustration'
 import { BrandStorySection } from '@/components/www/BrandStorySection'

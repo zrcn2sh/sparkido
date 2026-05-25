@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonForbidden, jsonUnauthorized } from '@/lib/api'
@@ -17,9 +15,10 @@ import {
   updateSpark,
 } from '@/lib/sparks'
 
-type RouteContext = { params: { id: string } }
+type RouteContext = { params: Promise<{ id: string }> }
 
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(_request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     const spark = await getSparkById(params.id)
@@ -42,7 +41,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
   }
 }
 
-export async function PATCH(request: Request, { params }: RouteContext) {
+export async function PATCH(request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -85,7 +85,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(_request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     if (!userId) return jsonUnauthorized()

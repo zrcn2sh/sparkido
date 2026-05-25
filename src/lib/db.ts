@@ -24,9 +24,13 @@ export type D1ExecResult = {
 
 let dbPromise: Promise<D1Database> | null = null
 
+import { getWranglerConfigPath } from '@/lib/wrangler-config'
+
 async function connectViaWrangler(): Promise<D1Database> {
   const { getPlatformProxy } = await import('wrangler')
-  const { env } = await getPlatformProxy({ configPath: 'wrangler.toml' })
+  const { env } = await getPlatformProxy({
+    configPath: getWranglerConfigPath(),
+  })
   const db = env.DB as D1Database | undefined
   if (!db) {
     throw new Error('D1 binding "DB" not found. wrangler.toml을 확인하세요.')

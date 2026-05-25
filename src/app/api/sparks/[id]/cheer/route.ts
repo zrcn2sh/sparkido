@@ -1,18 +1,16 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonUnauthorized } from '@/lib/api'
 import { cheerSpark } from '@/lib/spark-fuel'
 
-type RouteContext = { params: { id: string } }
+type RouteContext = { params: Promise<{ id: string }> }
 
 export async function POST(_request: Request, context: RouteContext) {
   try {
     const { userId } = await auth()
     if (!userId) return jsonUnauthorized()
 
-    const sparkId = context.params.id?.trim()
+    const sparkId = (await context.params).id?.trim()
     if (!sparkId) return jsonError('Spark ID가 올바르지 않습니다.', 400)
 
     const result = await cheerSpark(sparkId, userId)

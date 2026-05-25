@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { NicknameProfilePanel } from '@/components/auth/NicknameProfilePanel'
@@ -9,12 +7,11 @@ import { hasUserProfile } from '@/lib/user-profile'
 export const dynamic = 'force-dynamic'
 
 type NicknameOnboardingPageProps = {
-  searchParams: { returnBack?: string }
+  searchParams: Promise<{ returnBack?: string }>
 }
 
-export default async function NicknameOnboardingPage({
-  searchParams,
-}: NicknameOnboardingPageProps) {
+export default async function NicknameOnboardingPage(props: NicknameOnboardingPageProps) {
+  const searchParams = await props.searchParams;
   const { userId } = await auth()
   if (!userId) {
     redirect('/sign-in?redirect_url=/onboarding/nickname')

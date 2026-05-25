@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -11,13 +9,13 @@ import {
 } from '@/lib/layout'
 import { resolveSparkPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
-import { headers } from 'next/headers'
+import { getRequestHost } from '@/lib/request-host'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ProfileSettingsPage() {
   const { userId } = await auth()
-  const host = headers().get('host') ?? ''
+  const host = await getRequestHost()
   if (!userId) {
     redirect('/sign-in?redirect_url=/settings/profile')
   }

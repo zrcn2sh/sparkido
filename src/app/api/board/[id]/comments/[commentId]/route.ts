@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'
@@ -11,9 +9,10 @@ import {
   validateCommentContent,
 } from '@/lib/board-comments'
 
-type RouteContext = { params: { id: string; commentId: string } }
+type RouteContext = { params: Promise<{ id: string; commentId: string }> }
 
-export async function PATCH(request: Request, { params }: RouteContext) {
+export async function PATCH(request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -51,7 +50,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(_request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     if (!userId) {

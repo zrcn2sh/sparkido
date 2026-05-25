@@ -17,11 +17,11 @@ import { getSparkStageMeta } from '@/lib/spark-stages'
 import { formatKstDate } from '@/lib/datetime'
 import { resolveSparkPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
-import { headers } from 'next/headers'
 import type { Spark } from '@/types'
 
 type SparkCardProps = {
   spark: Spark
+  host: string
   viewerId?: string | null
   viewerIsAdmin?: boolean
   authorName: string
@@ -31,12 +31,12 @@ type SparkCardProps = {
 
 export function SparkCard({
   spark,
+  host,
   viewerId,
   viewerIsAdmin = false,
   authorName,
   participantCount,
 }: SparkCardProps) {
-  const host = headers().get('host') ?? ''
   const perm = { viewerIsAdmin }
   const display = sanitizeSparkForViewer(spark, viewerId, perm)
   const snippet = getSparkListSnippet(viewerId, spark, perm)

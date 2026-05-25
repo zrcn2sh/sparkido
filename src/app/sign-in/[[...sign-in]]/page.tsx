@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { SignIn } from '@clerk/nextjs'
 import {
   SESSION_EXPIRED_MESSAGE,
@@ -7,10 +5,11 @@ import {
 } from '@/lib/session-config'
 
 type SignInPageProps = {
-  searchParams: { reason?: string }
+  searchParams: Promise<{ reason?: string }>
 }
 
-export default function SignInPage({ searchParams }: SignInPageProps) {
+export default async function SignInPage(props: SignInPageProps) {
+  const searchParams = await props.searchParams;
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-12 text-sm text-muted-foreground">

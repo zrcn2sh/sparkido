@@ -1,11 +1,9 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { resolveSparkPath } from '@/lib/routes'
 import { getUserRole, isAdmin } from '@/lib/user-role'
-import { headers } from 'next/headers'
+import { getRequestHost } from '@/lib/request-host'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +13,7 @@ export default async function AdminLayout({
   children: React.ReactNode
 }>) {
   const { userId } = await auth()
-  const host = headers().get('host') ?? ''
+  const host = await getRequestHost()
 
   if (!userId) {
     redirect('/sign-in?redirect_url=/admin')

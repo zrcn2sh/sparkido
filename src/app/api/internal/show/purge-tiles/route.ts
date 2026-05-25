@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { getKstYmd, nowKstIso } from '@/lib/datetime'
 import { getDb } from '@/lib/db'
 import { purgeAllShowTiles } from '@/lib/show-tiles'

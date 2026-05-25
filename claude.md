@@ -10,14 +10,29 @@
 ## 기술 스택
 
 ```
-Frontend  : Next.js 14 App Router, TypeScript, Tailwind CSS
+Frontend  : Next.js 15 App Router, TypeScript, Tailwind CSS
 Backend   : Cloudflare Workers (Node.js)
 Database  : Cloudflare D1 (SQLite)
 Storage   : Cloudflare R2
-Deploy    : Cloudflare Pages
+Deploy    : Cloudflare Workers (OpenNext `@opennextjs/cloudflare`)
 Auth      : Lucia Auth 또는 Clerk
 Email     : Resend
 ```
+
+---
+
+## 배포 (Workers Builds)
+
+| 단계 | 명령 |
+|------|------|
+| 로컬 개발 | `npm run dev` |
+| Workers 런타임 미리보기 | `npm run preview` |
+| CI 빌드 | `npm run cf:build` (`opennextjs-cloudflare build`) |
+| CI 배포 | `npm run deploy` 또는 `npx wrangler deploy` |
+
+- `@opennextjs/cloudflare@1.19` (Next 15.5 호환)
+- 산출물: `.open-next/worker.js`, `.open-next/assets`
+- `pages_build_output_dir` / `@cloudflare/next-on-pages` 사용 안 함
 
 ---
 

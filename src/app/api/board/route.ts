@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'

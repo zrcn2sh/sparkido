@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { jsonError, jsonForbidden, jsonUnauthorized } from '@/lib/api'
@@ -11,9 +9,10 @@ import {
   validateCommentContent,
 } from '@/lib/board-comments'
 
-type RouteContext = { params: { id: string } }
+type RouteContext = { params: Promise<{ id: string }> }
 
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(_request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const post = await getBoardPostById(params.id)
     if (!post) {
@@ -34,7 +33,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
   }
 }
 
-export async function POST(request: Request, { params }: RouteContext) {
+export async function POST(request: Request, props: RouteContext) {
+  const params = await props.params;
   try {
     const { userId } = await auth()
     if (!userId) {

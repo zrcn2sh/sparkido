@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { AppProviders } from '@/components/providers/AppProviders'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'

@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -17,10 +15,11 @@ import { getBoardPostById } from '@/lib/board'
 export const dynamic = 'force-dynamic'
 
 type BoardDetailPageProps = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default async function BoardDetailPage({ params }: BoardDetailPageProps) {
+export default async function BoardDetailPage(props: BoardDetailPageProps) {
+  const params = await props.params;
   const { userId } = await auth()
   let post: Awaited<ReturnType<typeof getBoardPostById>> = null
 

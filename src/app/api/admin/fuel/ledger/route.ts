@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { NextResponse } from 'next/server'
 import { requireAdminUserId } from '@/lib/admin-auth'
 import { searchAdminFuelLedger } from '@/lib/admin-fuel-ledger'

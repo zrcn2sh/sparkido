@@ -8,7 +8,7 @@ import { getAppUrl, getInfoUrl } from '@/lib/routes'
 import { getIsAlphaPeriod } from '@/lib/fuel-settings'
 import { isAdmin } from '@/lib/user-role'
 import { cn } from '@/lib/utils'
-import { headers } from 'next/headers'
+import { getRequestHost } from '@/lib/request-host'
 
 type TopNavProps = {
   variant: 'www' | 'spark' | 'show'
@@ -24,7 +24,7 @@ function resolveWwwPath(subpath: string, host: string): string {
 }
 
 export async function TopNav({ variant }: TopNavProps) {
-  const host = headers().get('host') ?? ''
+  const host = await getRequestHost()
   const { userId } = await auth()
   const showAdmin = userId ? await isAdmin(userId) : false
   const isAlphaPeriod = await getIsAlphaPeriod()

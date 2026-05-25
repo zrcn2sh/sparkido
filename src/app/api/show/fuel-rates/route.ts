@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { getShowPublicConfig } from '@/lib/show-fuel'
 import { NextResponse } from 'next/server'
 

@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -9,17 +7,18 @@ import { Button } from '@/components/ui/button'
 import { canEditSpark } from '@/lib/spark-permissions'
 import { sparkHasOtherContributorLabs } from '@/lib/labs'
 import { getSparkById } from '@/lib/sparks'
+import { getRequestHost } from '@/lib/request-host'
 import { resolveSparkPath } from '@/lib/routes'
-import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
 type SparkEditPageProps = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default async function SparkEditPage({ params }: SparkEditPageProps) {
-  const host = headers().get('host') ?? ''
+export default async function SparkEditPage(props: SparkEditPageProps) {
+  const params = await props.params;
+  const host = await getRequestHost()
   const { userId } = await auth()
 
   if (!userId) {

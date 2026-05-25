@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { NextResponse } from 'next/server'
 import { jsonError } from '@/lib/api'
 import { requireAdminUserId } from '@/lib/admin-auth'
@@ -7,14 +5,14 @@ import { updateMemberRole } from '@/lib/admin-users'
 import { getUserRole, isAdminUserId } from '@/lib/user-role'
 import type { UserRole } from '@/types'
 
-type RouteContext = { params: { userId: string } }
+type RouteContext = { params: Promise<{ userId: string }> }
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const admin = await requireAdminUserId()
     if (!admin.ok) return admin.response
 
-    const targetUserId = context.params.userId?.trim()
+    const targetUserId = (await context.params).userId?.trim()
     if (!targetUserId) {
       return jsonError('회원 ID가 올바르지 않습니다.', 400)
     }

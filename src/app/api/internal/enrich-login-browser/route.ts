@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { earnLoginFuelForClerkSession } from '@/lib/fuel-auth-rewards'
 import { enrichLoginEventBrowserFromRequest } from '@/lib/login-event-enrich'
 import { NextResponse } from 'next/server'

@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { AdminPageSection } from '@/components/admin/admin-layout'
 import { AdminMemberTable } from '@/components/admin/AdminMemberTable'
 import { listAdminMembers } from '@/lib/admin-users'

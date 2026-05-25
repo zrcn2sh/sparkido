@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { SparkCard } from '@/components/spark/SparkCard'
@@ -9,13 +7,13 @@ import { getDisplayNamesByUserIds } from '@/lib/auth'
 import { countLabParticipantsBySparkIds } from '@/lib/labs'
 import { listSparks } from '@/lib/sparks'
 import { isAdmin } from '@/lib/user-role'
+import { getRequestHost } from '@/lib/request-host'
 import { resolveSparkPath } from '@/lib/routes'
-import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SparkListPage() {
-  const host = headers().get('host') ?? ''
+  const host = await getRequestHost()
   let sparks: Awaited<ReturnType<typeof listSparks>> = []
   let loadError: string | null = null
 
@@ -86,6 +84,7 @@ export default async function SparkListPage() {
             <li key={spark.id} className="h-full">
               <SparkCard
                 spark={spark}
+                host={host}
                 viewerId={userId}
                 viewerIsAdmin={viewerIsAdmin}
                 authorName={authorNames[spark.authorId] ?? '알 수 없음'}

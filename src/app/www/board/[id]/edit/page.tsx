@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -11,10 +9,11 @@ import { getBoardPostById } from '@/lib/board'
 export const dynamic = 'force-dynamic'
 
 type BoardEditPageProps = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default async function BoardEditPage({ params }: BoardEditPageProps) {
+export default async function BoardEditPage(props: BoardEditPageProps) {
+  const params = await props.params;
   const { userId } = await auth()
   if (!userId) {
     redirect(

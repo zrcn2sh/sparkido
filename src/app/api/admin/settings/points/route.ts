@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { NextResponse } from 'next/server'
 import { jsonError } from '@/lib/api'
 import { requireAdminUserId } from '@/lib/admin-auth'

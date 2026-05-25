@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { BoardCategoryList } from '@/components/board/BoardCategoryList'
 
 export const dynamic = 'force-dynamic'

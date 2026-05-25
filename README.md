@@ -96,12 +96,21 @@ sparkido/
 | `NEXT_PUBLIC_WWW_URL` / `NEXT_PUBLIC_SPARK_URL` | 서브도메인 URL |
 | `D1_DATABASE_ID` 등 | Cloudflare (배포·원격 DB) |
 
-## 배포 (Cloudflare Pages)
+## 배포 (Cloudflare Workers + OpenNext)
 
-1. GitHub 저장소 연결 후 빌드
-2. D1 바인딩 (`DB`) 및 환경 변수 설정
+Git **Create application** → `zrcn2sh/sparkido`
+
+| 항목 | 값 |
+|------|-----|
+| Build command | `npm run cf:build` |
+| Deploy command | `npm run deploy` 또는 `npx wrangler deploy` |
+
+로컬: `npm run dev` · Workers 미리보기: `npm run preview` · 배포: `npm run deploy`
+
+1. Worker 프로젝트 **sparkido**에 D1 바인딩 (`DB`) 및 **Build variables**에 Clerk 등 env 설정
+2. `nodejs_compat` (Functions 호환 플래그)
 3. `npm run db:migrate:remote` (아래 D1 오류 참고)
-4. Clerk에 프로덕션 도메인·Redirect URL 등록
+4. Clerk 프로덕션 도메인·Redirect URL (`*.workers.dev` 또는 커스텀 도메인)
 5. (선택) Clerk Webhook → `https://your-domain/api/webhooks/clerk`
 
 ### D1 API 오류가 날 때
@@ -111,7 +120,7 @@ sparkido/
 | 원인 | 확인·조치 |
 |------|-----------|
 | **원격 마이그레이션 미적용** | `npm run db:migrate:remote` 실행. 최근 추가: `0010_user_roles`, `0011_board_comments` |
-| **Pages에 D1 바인딩 없음** | Cloudflare Dashboard → Pages → 프로젝트 → Settings → Bindings → D1 이름 **`DB`**, DB `sparkido` |
+| **D1 바인딩 없음** | Dashboard → **sparkido** Worker → Settings → Bindings → D1 이름 **`DB`**, DB `sparkido` |
 | **Wrangler 로그인/토큰** | `npx wrangler login` 또는 `CLOUDFLARE_API_TOKEN` (D1 Edit 권한) |
 | **컬럼 없음** (배포 직후) | `npx wrangler d1 execute sparkido --remote --command "PRAGMA table_info(user_profiles);"` 에 `role` 있는지 확인 |
 
