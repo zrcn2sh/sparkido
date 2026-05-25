@@ -1,5 +1,4 @@
 name = "sparkido"
-account_id = "686fae1f587670ca2a8ea9ad8139353b"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
